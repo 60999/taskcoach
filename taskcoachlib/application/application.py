@@ -85,8 +85,20 @@ def _log_environment():
     log_message(f"wxPython {wx.version()}")
     log_message(f"Platform: {platform.platform()}")
 
-    # Log GTK/glibc info on Linux
+    # Log GTK/glibc/distro info on Linux
     if platform.system() == 'Linux':
+        # Log distro version (e.g., "Ubuntu 24.04.3 LTS (Noble Numbat)")
+        try:
+            os_release = platform.freedesktop_os_release()
+            distro_name = os_release.get('NAME', 'Unknown')
+            distro_version = os_release.get('VERSION', '')
+            if distro_version:
+                log_message(f"Distro: {distro_name} {distro_version}")
+            else:
+                log_message(f"Distro: {distro_name}")
+        except OSError:
+            pass
+
         try:
             import ctypes
             libc = ctypes.CDLL('libc.so.6')
@@ -258,6 +270,18 @@ def _log_wx_info():
                              f"client_area={client.x},{client.y} {client.width}x{client.height}")
     except Exception as e:
         log_message(f"Display info unavailable: {e}")
+
+    # Log scaling info (useful for HiDPI debugging)
+    try:
+        scale_factors = [wx.Display(i).GetScaleFactor() for i in range(wx.Display.GetCount())]
+        log_message(f"wx scale factors: {scale_factors}")
+    except Exception:
+        pass
+    # Linux-specific scaling environment variables
+    if sys.platform == 'linux':
+        scale_vars = ['GDK_SCALE', 'GDK_DPI_SCALE', 'QT_SCALE_FACTOR', 'QT_AUTO_SCREEN_SCALE_FACTOR']
+        scale_info = [f"{v}={os.environ.get(v, 'not set')}" for v in scale_vars]
+        log_message(f"Scaling env: {', '.join(scale_info)}")
 
     log_message("=" * 60)
 
