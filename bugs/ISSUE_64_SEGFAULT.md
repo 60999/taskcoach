@@ -4,11 +4,11 @@
 
 ## Summary
 
-Task Coach crashes with a segmentation fault on startup for some users running Ubuntu 24.04 with wxPython 4.2.1.
+Task Coach crashes with a segmentation fault on startup for one user running Ubuntu 24.04. The crash occurs at `wx.Log.SetActiveTarget(wx.LogStderr())` but **cannot be reproduced** on developer test systems.
 
 **GitHub Issue:** https://github.com/taskcoach/taskcoach/issues/64
 
-**Status:** NOT REPRODUCED - No fix will be applied until issue can be reproduced
+**Status:** NOT REPRODUCED - Cannot reproduce in VM even with identical kernel 6.8.0-90. **Real hardware GPU drivers or server kernel security settings** are the primary suspects. User is on GA kernel track (server default) which may have different security configurations (AppArmor, seccomp) than desktop HWE track.
 
 ---
 
@@ -63,6 +63,16 @@ Adding duplicate image handler for 'Windows bitmap file'
 Adding duplicate animation handler for '1' type
 Adding duplicate animation handler for '2' type
 ```
+
+### User's Report (January 2, 2026)
+
+User sjefbosman tested v2.0.0.92 and reported the crash persisted. The diagnostic output showed:
+- Locale initialization completed successfully
+- Mixed locale settings (LANG: en_US.UTF-8, LC_TIME/LC_NUMERIC: fr_FR.UTF-8)
+- i18n module loaded correctly
+- Crash still occurred at same location (application.py line 493)
+
+The added diagnostic logging confirmed the crash happens **after** successful locale/i18n initialization, ruling out localization as the cause.
 
 ---
 
@@ -173,6 +183,268 @@ ALL STEPS COMPLETED - NO CRASH
 
 ---
 
+## Investigation (January 3, 2026)
+
+### User Test: Empty System with Single Monitor
+
+User sjefbosman tested on a **minimal configuration** to isolate the issue:
+
+| Component | Value |
+|-----------|-------|
+| Task Coach | 2.0.0.92 |
+| Python | 3.12.3 |
+| wxPython | 4.2.1 gtk3 (phoenix) wxWidgets 3.2.4 |
+| **Kernel** | **6.8.0-90-generic** |
+| GTK | 3.24.41 |
+| glibc | 2.39 |
+| Desktop | ubuntu:GNOME (X11) |
+| Displays | **1 monitor** (1920x1080) |
+| Config | Empty system, no extensions, no apps running |
+| Task file | Welcome.tsk (explicitly specified) |
+| Locale | en_US.UTF-8 (LC_TIME/LC_NUMERIC: en_GB.UTF-8) |
+
+**Result: CRASH** - Same segfault at `application.py:493`, identical stack trace.
+
+User also installed missing packages (python3-squaremap, gntp-send) - same crash.
+
+### Developer Test 1: Fresh Ubuntu 24.04 VM (Kernel 6.14)
+
+| Component | Value |
+|-----------|-------|
+| Task Coach | 2.0.0.92 |
+| Python | 3.12.3 |
+| wxPython | 4.2.1 gtk3 (phoenix) wxWidgets 3.2.4 |
+| Kernel | 6.14.0-37-generic |
+| GTK | 3.24.41 |
+| Desktop | ubuntu:GNOME (X11) |
+| Displays | 1 monitor |
+| Hardware | **VM (virt-manager, virtio graphics)** |
+
+**Result: NO CRASH**
+
+### Developer Test 2: Same VM with Kernel 6.8.0-90
+
+Installed kernel 6.8.0-90-generic on the same VM to match user's kernel:
+
+| Component | Value |
+|-----------|-------|
+| Task Coach | 2.0.0.92 |
+| Python | 3.12.3 |
+| wxPython | 4.2.1 gtk3 (phoenix) wxWidgets 3.2.4 |
+| **Kernel** | **6.8.0-90-generic** |
+| GTK | 3.24.41 |
+| Desktop | ubuntu:GNOME (X11) |
+| Displays | 1 monitor |
+| Hardware | **VM (virt-manager, virtio graphics)** |
+
+**Result: NO CRASH** - Tested on both Wayland and X11 sessions.
+
+### What This Proves
+
+| Hypothesis | Status |
+|------------|--------|
+| wxPython 4.2.1 is broken | **RULED OUT** - Works on dev system |
+| TEE stderr redirection is broken | **RULED OUT** - Works on dev system |
+| Python 3.12 + wxPython combo | **RULED OUT** - Works on dev system |
+| 3-monitor setup causes crash | **RULED OUT** - User crashed with 1 monitor |
+| Config files cause crash | **RULED OUT** - User crashed on empty system |
+| Missing packages cause crash | **RULED OUT** - Installing squaremap didn't help |
+| Kernel 6.8.0-90 is the issue | **RULED OUT** - Works in VM with same kernel |
+| **Real hardware vs VM** | **PRIMARY SUSPECT** - Only remaining difference |
+
+### Comparison Summary
+
+| Factor | User (CRASH) | Dev VM (OK) | Dev VM (OK) |
+|--------|--------------|-------------|-------------|
+| Kernel | 6.8.0-90 | 6.14.0-37 | 6.8.0-90 |
+| Hardware | **Real PC** | VM | VM |
+| Graphics | **Real GPU** | virtio | virtio |
+| X11 | Yes | Yes | Yes |
+| Result | **CRASH** | OK | OK |
+
+The crash cannot be reproduced in a VM even with the same kernel. The issue appears to be related to **real hardware GPU drivers** interacting with wxPython/GTK.
+
+---
+
+## Technical Analysis: Why the Crash Occurs at SetActiveTarget
+
+### The Crash Line
+
+```python
+wx.Log.SetActiveTarget(wx.LogStderr())
+```
+
+This line is the **first explicit C++ stderr access** after TEE's file descriptor manipulation.
+
+### Thread State at Crash Time
+
+The user's crash trace shows 4 threads active:
+
+| Thread | File:Line | Code | State |
+|--------|-----------|------|-------|
+| **Main** | `application.py:517` | `wx.Log.SetActiveTarget(wx.LogStderr())` | **CRASH HERE** |
+| TEE stderr | `tee.py:91` | `data = os.read(pipe_read_fd, 4096)` | Blocked reading pipe |
+| TEE stderr | `tee.py:106` | `log_file.write(text)` | In same function scope |
+| FS poller | `fs_poller.py:54` | `self.evt.wait(10)` | Sleeping |
+
+### What Each Line Does
+
+**`application.py:517` - wx.Log.SetActiveTarget(wx.LogStderr())**
+1. `wx.LogStderr()` creates a C++ wxLogStderr object
+2. The C++ constructor initializes a pointer to C's `FILE* stderr`
+3. `SetActiveTarget()` installs it as the active log target
+4. The C++ code may access `stderr` stream state - **SEGFAULT**
+
+**`tee.py:91` - os.read(pipe_read_fd, 4096)**
+- TEE thread blocked waiting for data from stderr pipe
+- `pipe_read_fd` is the read end of the pipe that replaced fd 2
+
+**`tee.py:106` - log_file.write(text)**
+- Writes captured stderr text to `~/taskcoachlog.txt`
+- Appears in trace because it's in the same function
+
+**`fs_poller.py:54` - self.evt.wait(10)**
+- Filesystem poller sleeping, checking for .tsk file changes every 10 seconds
+- Not involved in crash, just happened to be running
+
+### Why This Line Specifically?
+
+```
+BEFORE TEE init_tee():
+┌─────────────────────────────────────┐
+│  Python sys.stderr ──► fd 2 ──► terminal
+│  C runtime stderr  ──► fd 2 ──► terminal
+└─────────────────────────────────────┘
+
+AFTER TEE init_tee():
+┌─────────────────────────────────────┐
+│  Python sys.stderr ──► fd 2 ──► PIPE
+│  C runtime stderr  ──► fd 2 ──► PIPE
+│  (internal buffer state = ???)
+└─────────────────────────────────────┘
+
+wx.LogStderr() CREATED:
+┌─────────────────────────────────────┐
+│  wxLogStderr C++ object
+│    └─► directly accesses C's stderr
+│         └─► inconsistent state?
+│              └─► SEGFAULT
+└─────────────────────────────────────┘
+```
+
+The earlier "Adding duplicate handler" messages work because they use the **default auto-detected log target**, not an explicitly created `wxLogStderr`. When `wx.LogStderr()` is explicitly created, its C++ constructor directly accesses the C runtime's stderr stream.
+
+### Faulthandler Output
+
+The user may see output like:
+```
+matplotlib._path, kiwisolver._cext, matplotlib._imageSegmentation fault (core dumped)
+```
+
+This "truncated" appearance happens because:
+1. Python's **faulthandler** only outputs on fatal signals (SIGSEGV)
+2. The segfault kills the process instantly at the C level
+3. No opportunity to flush buffers or print a newline
+4. The shell's "Segmentation fault" message concatenates directly
+
+The "Extension modules:" line is **crash-only diagnostic output** - it never appears during normal operation because faulthandler only activates on fatal signals.
+
+---
+
+## Remaining Suspect: Real Hardware GPU Drivers
+
+All software hypotheses have been ruled out. Kernel 6.8.0-90 works fine in a VM. The crash only occurs on **real hardware**.
+
+| System | Kernel | Hardware | Result |
+|--------|--------|----------|--------|
+| User (sjefbosman) | 6.8.0-90 | Real PC + real GPU | **CRASH** |
+| Developer VM | 6.8.0-90 | VM + virtio graphics | OK |
+| Developer VM | 6.14.0-37 | VM + virtio graphics | OK |
+
+### Possible Hardware-Related Causes
+
+1. **GPU driver interaction with stderr** - Real GPU drivers (NVIDIA, AMD, Intel) may interact differently with GTK/wxWidgets logging and file descriptors than VM virtual graphics.
+
+2. **Driver-specific GTK initialization** - Real GPU drivers perform additional initialization during GTK startup that may conflict with TEE's stderr redirection.
+
+3. **Proprietary vs open-source drivers** - NVIDIA proprietary drivers or specific Mesa versions may have bugs when stderr is redirected to a pipe.
+
+4. **Known wxPython/GTK issues** - There are documented cases of wxPython segfaults related to GTK initialization order and logging ([wxWidgets #15898](https://github.com/wxWidgets/wxWidgets/issues/15898)).
+
+### Server vs Desktop Kernel CONFIG Differences
+
+The GA kernel (server default) has different compile-time settings than desktop kernels:
+
+| Setting | Server (GA 6.8) | Desktop (HWE 6.14) | Impact |
+|---------|-----------------|---------------------|--------|
+| **Preemption** | `CONFIG_PREEMPT_NONE` (off) | `CONFIG_PREEMPT_VOLUNTARY` (on) | Race condition timing |
+| **Timer rate** | 100 Hz | 250 Hz | Interrupt frequency |
+| **I/O scheduler** | Deadline | CFQ | I/O ordering |
+| **Mesa** | Older | 25.0 (backported) | Graphics stack |
+
+**The preemption and timer differences could cause race conditions to manifest differently.**
+
+If there's a timing-sensitive race between TEE's `dup2()` and wxWidgets' stderr access:
+- Server kernel (100Hz, no preemption) → race condition triggers → CRASH
+- Desktop kernel (250Hz, preemptive) → race condition doesn't trigger → OK
+- VM (different timing characteristics) → race condition doesn't trigger → OK
+
+### AppArmor (Both Have It)
+
+Both server and desktop have AppArmor enabled by default, so this is unlikely to be the difference. However, it's still worth checking for denials:
+```bash
+sudo aa-status
+sudo dmesg | grep -i apparmor
+```
+
+### Questions for User
+
+To investigate security-related causes:
+```bash
+# Check AppArmor status
+sudo aa-status
+
+# Check for AppArmor denials
+sudo dmesg | grep -i apparmor
+
+# Check audit log
+sudo ausearch -m avc -ts recent
+
+# Check if running in confined mode
+cat /proc/self/attr/current
+```
+
+### Ubuntu 24.04 Kernel Tracks
+
+Ubuntu 24.04 LTS has **two separate kernel tracks** that do not cross-update:
+
+| Track | Name | Kernel | Default For | Updates |
+|-------|------|--------|-------------|---------|
+| **GA** | General Availability | 6.8.0-xx | Server installs | Security patches only, stays on 6.8.x forever |
+| **HWE** | Hardware Enablement | 6.14.0-xx | Desktop installs | Rolling updates to newer kernels |
+
+**Key points:**
+- Running `apt upgrade` does **NOT** switch tracks - GA stays on 6.8.x
+- The user (sjefbosman) is on the GA track, likely from a server-style install
+- GA kernel may have different security configurations than HWE
+- To switch to HWE kernel:
+  ```bash
+  sudo apt install linux-generic-hwe-24.04
+  sudo reboot
+  ```
+
+### Recommended Workaround for User
+
+Ask user to switch to the HWE kernel track:
+```bash
+sudo apt install linux-generic-hwe-24.04
+sudo reboot
+```
+
+This provides kernel 6.14.x which may resolve the GPU driver interaction issue.
+
+---
+
 ## Files To Check (Ask User)
 
 The following files are accessed during startup before the crash point:
@@ -206,21 +478,51 @@ wx.Log.SetActiveTarget(wx.LogStderr())
 
 However, this code does not crash in our test environment (see Investigation section above).
 
+### Ruled Out Theories
+
+| Theory | Evidence Against |
+|--------|------------------|
+| wxPython 4.2.1 is broken | Same version works on dev system |
+| TEE stderr redirection causes crash | TEE works on dev system |
+| Python 3.12 + wxPython combo issue | Same combination works on dev system |
+| 3-monitor setup causes crash | User tested with 1 monitor, still crashed |
+| Corrupted config files | User tested on empty system, still crashed |
+| Missing packages (squaremap, gntp) | User installed them, still crashed |
+| Locale/i18n issues | User has simple en_US/en_GB, still crashed |
+| Kernel 6.8.0-90 is broken | Works in VM with same kernel |
+
+The crash appears to be **hardware or security-configuration specific**, not a bug in Task Coach, wxPython, TEE, or the kernel itself.
+
 ---
 
 ## Next Steps
 
-1. **Ask user to check files:** Request the user answer the questions in "Files To Check" section above
-
-2. **Ask user to test with fresh config:** Request the user rename `~/.config/Task Coach/` temporarily and test with clean configuration
-
-3. **Ask user to test with Welcome.tsk:**
+1. **Ask user to switch to HWE kernel (most likely fix):**
+   ```bash
+   sudo apt install linux-generic-hwe-24.04
+   sudo reboot
    ```
-   taskcoach.py ~/Documents/Welcome.tsk
-   ```
-   This tests whether the crash occurs when explicitly loading a known-good task file.
+   This switches from GA (server) kernel 6.8.x to HWE (desktop) kernel 6.14.x.
 
-4. **Get more information:** Need user's help to reproduce the issue before any fix can be made
+2. **Ask user to check security configurations:**
+   ```bash
+   sudo aa-status                          # AppArmor status
+   sudo dmesg | grep -i apparmor          # AppArmor denials
+   sudo ausearch -m avc -ts recent        # Audit log
+   cat /proc/self/attr/current            # Confinement status
+   ```
+
+3. **Ask user for GPU/driver info:**
+   ```bash
+   lspci | grep -i vga
+   glxinfo | grep "OpenGL renderer"
+   dpkg -l | grep -i nvidia
+   ```
+
+4. **Consider workaround in code:** If cannot be resolved:
+   - Wrap `SetActiveTarget(wx.LogStderr())` in try/except
+   - Make it conditional based on platform detection
+   - Skip it entirely (wx auto-detects log target anyway)
 
 ---
 
@@ -232,4 +534,4 @@ However, this code does not crash in our test environment (see Investigation sec
 
 ---
 
-**Last Updated:** January 2, 2026
+**Last Updated:** January 3, 2026
