@@ -2,6 +2,24 @@
 
 This document describes the packaging setup for Task Coach on various Linux distributions including Debian, Ubuntu, Linux Mint, Arch Linux, Manjaro, and Fedora.
 
+## Table of Contents
+
+- [Dependency Installation Strategy](#dependency-installation-strategy)
+- [Install Overview by Build Target](#install-overview-by-build-target)
+- [Estimated Desktop User Base](#estimated-desktop-user-base-by-distribution)
+- [Upstream vs Debian Packaging](#important-upstream-vs-debian-packaging)
+- [Directory Structure](#directory-structure)
+- [Building Locally](#building-locally)
+- [wxPython Patch Strategy](#wxpython-patch-strategy)
+- [Dependencies](#dependencies)
+- [Ubuntu PPA Publishing](#ubuntu-ppa-publishing)
+- [Official Debian Packaging](#official-debian-packaging-for-debian-maintainers)
+- [GitHub Actions CI](#github-actions-ci)
+- [Arch Linux / Manjaro Packaging](#arch-linux--manjaro-packaging)
+- [Fedora Packaging](#fedora-packaging)
+- [AppImage Packaging](#appimage-packaging)
+- [References](#references)
+
 ## Dependency Installation Strategy
 
 All build scripts follow the same simple strategy:
@@ -14,6 +32,8 @@ All build scripts follow the same simple strategy:
 
 | Package | Min Version | Why Required | Distros with Old Versions |
 |---------|-------------|--------------|---------------------------|
+| Python | >=3.8 | Type hints, f-strings, walrus operator | — |
+| wxPython | >=4.2.0 | HyperTreeList stability | — |
 | wxPython | >=4.2.4 | hypertreelist row background fix (PR #2088) | All current (Bookworm 4.2.0, Trixie 4.2.3) |
 | pyparsing | >=3.1.3 | `pp.Tag()` API | Debian Bookworm (3.0.9) |
 | watchdog | >=3.0.0 | File monitoring API | Debian Bookworm (2.2.1) |
@@ -53,50 +73,52 @@ The `setup.py` file lists core dependencies with version requirements where need
 
 This table shows how dependencies are handled in **built packages** and **setup scripts**.
 
-| Package | debian12 | ubuntu22 | debian13 | ubuntu24 | arch | fedora39 | fedora40 | windows | macos |
-|---------|:--------:|:--------:|:--------:|:--------:|:----:|:--------:|:--------:|:-------:|:-----:|
-| wxpython | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| pypubsub | distro | distro | distro | distro | AUR | distro | distro | pip | pip |
-| pyparsing | **pip** | **pip** | distro | distro | distro | **pip** | **pip** | pip | pip |
-| watchdog | **pip** | **pip** | distro | distro | distro | distro | distro | pip | pip |
-| squaremap | distro | distro | distro | distro | **pip** | **pip** | **pip** | pip | pip |
-| six | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| lxml | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| numpy | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| chardet | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| python-dateutil | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| keyring | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| pyxdg | distro | distro | distro | distro | distro | distro | distro | — | — |
-| fasteners | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| zeroconf | distro | distro | distro | distro | distro | distro | distro | pip | pip |
-| hypertreelist | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** |
-| desktop3 | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** |
-| gntp | — | — | — | — | — | — | — | pip | pip |
-| WMI | — | — | — | — | — | — | — | pip | — |
+| Package | debian12 | ubuntu22 | debian13 | ubuntu24 | arch | fedora39 | fedora40 | appimage | windows | macos |
+|---------|:--------:|:--------:|:--------:|:--------:|:----:|:--------:|:--------:|:--------:|:-------:|:-----:|
+| wxpython | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| pypubsub | distro | distro | distro | distro | AUR | distro | distro | bundled | pip | pip |
+| pyparsing | **pip** | **pip** | distro | distro | distro | **pip** | **pip** | bundled | pip | pip |
+| watchdog | **pip** | **pip** | distro | distro | distro | distro | distro | bundled | pip | pip |
+| squaremap | distro | distro | distro | distro | **pip** | **pip** | **pip** | bundled | pip | pip |
+| six | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| lxml | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| numpy | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| chardet | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| python-dateutil | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| keyring | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| pyxdg | distro | distro | distro | distro | distro | distro | distro | bundled | — | — |
+| fasteners | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| zeroconf | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| hypertreelist | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | bundled | **patch** | **patch** |
+| desktop3 | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | bundled | **bundled** | **bundled** |
+| gntp | — | — | — | — | — | — | — | — | pip | pip |
+| WMI | — | — | — | — | — | — | — | — | pip | — |
 
 **Key:**
 - `distro` = Installed from distribution repos (required dependency)
 - `pip` = Bundled via pip in package build (version too old or not in repos)
 - `patch` = Bundled patch in `taskcoachlib/patches/` (wxPython hypertreelist fix)
-- `bundled` = Bundled in `taskcoachlib/thirdparty/` (no external dependency)
+- `bundled` = Bundled in package (thirdparty/ for .deb/.rpm, or inside AppImage)
 - `AUR` = Arch User Repository (rolling release)
 - `—` = Not applicable for this platform
 
 ### Build Scripts and Workflows
 
-| Target | ID | Setup Script | GitHub Workflow | Notes |
-|--------|:--:|--------------|-----------------|-------|
-| Debian 12 Bookworm | debian12 | `setup_debian12_bookworm.sh` | `build-deb.yml` | pip: pyparsing, watchdog |
-| Debian 13 Trixie | debian13 | `setup_debian13_trixie.sh` | `build-deb.yml` | Distro deps sufficient |
-| Ubuntu 22.04 Jammy | ubuntu22 | `setup_ubuntu2204_jammy.sh` | `build-deb.yml` | pip: pyparsing, watchdog |
-| Ubuntu 24.04 Noble | ubuntu24 | `setup_ubuntu2404_noble.sh` | `build-deb.yml` | Distro deps sufficient |
-| Arch Linux | arch | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
-| Manjaro | arch | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
-| Fedora 39 | fedora39 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
-| Fedora 40 | fedora40 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
-| AppImage | appimage | — | `build-appimage.yml` | Self-contained, all deps included |
-| Windows | windows | — | — | Not currently building |
-| macOS | macos | — | — | Not currently building |
+| Target | ID | Python | wxPython | Setup Script | GitHub Workflow | Notes |
+|--------|:--:|:------:|:--------:|--------------|-----------------|-------|
+| Debian 12 Bookworm | debian12 | 3.11 | 4.2.0 | `setup_debian12_bookworm.sh` | `build-deb.yml` | pip: pyparsing, watchdog |
+| Debian 13 Trixie | debian13 | 3.12 | 4.2.3 | `setup_debian13_trixie.sh` | `build-deb.yml` | Distro deps sufficient |
+| Ubuntu 22.04 Jammy | ubuntu22 | 3.10 | 4.1.1 | `setup_ubuntu2204_jammy.sh` | `build-deb.yml` | pip: pyparsing, watchdog |
+| Ubuntu 24.04 Noble | ubuntu24 | 3.12 | 4.2.1 | `setup_ubuntu2404_noble.sh` | `build-deb.yml` | Distro deps sufficient |
+| Arch Linux | arch | latest | latest | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
+| Manjaro | arch | latest | latest | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
+| Fedora 39 | fedora39 | 3.12 | 4.2.1 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
+| Fedora 40 | fedora40 | 3.12 | 4.2.1 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
+| **AppImage** | appimage | **3.11** | **4.2.4** | — | `build-appimage.yml` | Bundles Python + all deps |
+| Windows | windows | — | — | — | — | Not currently building |
+| macOS | macos | — | — | — | — | Not currently building |
+
+**AppImage note:** Uses Python 3.11 (not 3.12) for wxPython wheel availability. See [AppImage Packaging](#appimage-packaging) section for details.
 
 **pip packages are bundled at build time** - users just install the package, no pip runs at install.
 
@@ -736,6 +758,120 @@ Features:
 | Distribution | Version | Tested | Notes |
 |--------------|---------|--------|-------|
 | Fedora | 39, 40 | ✓ | Primary target |
+
+---
+
+## AppImage Packaging
+
+The AppImage build system creates a portable, self-contained Linux executable that bundles Python, wxPython, and all dependencies into a single file.
+
+### What's Included
+
+| Component | Version | Source |
+|-----------|---------|--------|
+| Python | 3.11.14 | [python-appimage](https://github.com/niess/python-appimage) (manylinux_2_28) |
+| wxPython | 4.2.4 | [wxPython extras](https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04) |
+| wxWidgets | 3.2.8 | Bundled with wxPython |
+| Image libs | libjpeg, libpng, libtiff, libwebp | Copied from build system |
+
+The resulting AppImage runs on most Linux distributions with glibc 2.28+ (Debian Bookworm, Ubuntu 22.04+, Fedora 37+).
+
+### Design Decisions
+
+#### Why Python 3.11 (not 3.12 or 3.13)?
+
+| Factor | Python 3.11 | Python 3.12/3.13 |
+|--------|-------------|------------------|
+| wxPython wheels | Pre-built available | May require compilation |
+| Stability | Mature, well-tested | Newer, less tested with wx |
+| Compatibility | Broad library support | Some packages may lag |
+
+**Primary reason:** The wxPython extras repository provides pre-built wheels for Python 3.11 on Ubuntu 22.04 (the build platform). Using pre-built wheels:
+- Avoids lengthy compilation during CI builds
+- Ensures consistent, tested binaries
+- Reduces build failures
+
+**Future consideration:** When wxPython wheels are reliably available for Python 3.12+, upgrading is straightforward - just change the URL in `build-appimage.yml`.
+
+#### Why manylinux_2_28?
+
+The Python AppImage is built on a `manylinux_2_28` base (CentOS/RHEL with glibc 2.28). This ensures compatibility with older distributions. The "(Red Hat 14.2.1-7)" in the Python version string refers to the GCC version used to compile Python on the manylinux build system.
+
+#### Bundled vs System Libraries
+
+| Component | Bundled | System |
+|-----------|:-------:|:------:|
+| Python interpreter | ✓ | |
+| wxPython/wxWidgets | ✓ | |
+| Image libraries | ✓ | |
+| GTK 3 | | ✓ |
+| Graphics drivers | | ✓ |
+| Fonts | | ✓ |
+| glibc | | ✓ |
+
+**Note:** GTK is NOT bundled because it's tightly integrated with the display server, themes, and graphics stack. This means GTK-related issues may still be system-specific.
+
+### How It Works
+
+1. **Base Image** - Downloads pre-built Python AppImage from python-appimage project
+2. **Dependencies** - Installs wxPython from extras repository and other deps from PyPI
+3. **Library Bundling** - Copies required shared libraries (libjpeg, libpng, etc.)
+4. **Custom AppRun** - Creates launcher script setting PYTHONHOME, PYTHONPATH, LD_LIBRARY_PATH
+5. **Packaging** - Uses `appimagetool` to create the final `.AppImage` file
+
+### Directory Structure
+
+```
+TaskCoach.AppDir/
+├── AppRun              # Custom launcher script
+├── taskcoach.desktop   # Desktop entry
+├── taskcoach.png       # App icon
+├── opt/
+│   └── python3.11/     # Bundled Python
+│       ├── bin/python3.11
+│       └── lib/python3.11/site-packages/
+└── usr/
+    ├── lib/            # Bundled shared libraries
+    └── share/taskcoach/
+        ├── taskcoach.py
+        └── taskcoachlib/
+```
+
+### Building
+
+#### GitHub Actions
+
+`.github/workflows/build-appimage.yml`
+
+Triggers on push to main/master, version tags, and PRs. Tests on Debian Bookworm, Ubuntu 22.04/24.04, and Fedora 39.
+
+#### Local Build
+
+```bash
+./scripts/build-appimage.sh
+```
+
+Requires: `wget`, `file`, `patchelf`, and optionally `libfuse2`
+
+### Creating a Release
+
+1. Update version in `taskcoachlib/meta/data.py`
+2. Commit and push changes
+3. Create and push a tag:
+   ```bash
+   git tag v2.0.0.97
+   git push origin v2.0.0.97
+   ```
+4. GitHub Actions will build the AppImage and create a GitHub Release
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "cannot open shared object file" | Add library to `LIBS_TO_BUNDLE` in workflow |
+| Python path issues | Check PYTHONHOME, PYTHONPATH, LD_LIBRARY_PATH in AppRun |
+| YAML heredoc issues | Use `echo` statements instead of heredocs in workflow |
+| AppRun symlink | Remove original symlink before creating custom AppRun |
 
 ---
 
