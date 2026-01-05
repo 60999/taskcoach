@@ -562,8 +562,6 @@ defaults = {
         "duesoonhours": "24",  # When a task is considered to be "due soon"
     },
     "feature": {
-        "syncml": "False",
-        "iphone": "False",
         "notifier": "Task Coach",
         "minidletime": "0",
         "usesm2": "False",
@@ -573,23 +571,6 @@ defaults = {
         "sdtcspans_effort": "60,120,180,240",
         "decimaltime": "False",
         # New settings should use snake_case naming convention (PEP 8)
-    },
-    "syncml": {
-        "url": "",
-        "username": "",
-        "preferredsyncmode": "TWO_WAY",
-        "verbose": "True",
-        "taskdbname": "task",
-        "notedbname": "note",
-        "synctasks": "True",
-        "syncnotes": "True",
-        "showwarning": "True",
-    },
-    "iphone": {
-        "password": "",
-        "service": "",
-        "synccompleted": "True",
-        "showlog": "False",
     },
     "printer": {
         "margin_left": "0",

@@ -38,7 +38,6 @@ All build scripts follow the same simple strategy:
 | pyparsing | >=3.1.3 | `pp.Tag()` API | Debian Bookworm (3.0.9) |
 | watchdog | >=3.0.0 | File monitoring API | Debian Bookworm (2.2.1) |
 | fasteners | >=0.19 | File locking API | — |
-| zeroconf | >=0.50.0 | iPhone sync | — |
 
 **Note**: wxPython 4.2.4 was released October 28, 2025 but is not yet packaged for any distro.
 Until then, a bundled patch in `taskcoachlib/patches/` is used (see [CRITICAL_WXPYTHON_PATCH.md](CRITICAL_WXPYTHON_PATCH.md)).
@@ -88,7 +87,6 @@ This table shows how dependencies are handled in **built packages** and **setup 
 | keyring | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
 | pyxdg | distro | distro | distro | distro | distro | distro | distro | bundled | — | — |
 | fasteners | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| zeroconf | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
 | hypertreelist | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | bundled | **patch** | **patch** |
 | desktop3 | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | **bundled** | bundled | **bundled** | **bundled** |
 | gntp | — | — | — | — | — | — | — | — | pip | pip |
@@ -292,7 +290,6 @@ xdg-utils
 ### Optional Dependencies
 
 ```
-python3-zeroconf     # iPhone sync service discovery
 python3-squaremap    # Hierarchical data visualization
 python3-gntp         # Growl notifications (not in all distros)
 ```
@@ -547,7 +544,6 @@ python-pyxdg
 python-keyring
 python-numpy
 python-fasteners
-python-zeroconf
 libxss
 xdg-utils
 ```
@@ -705,7 +701,6 @@ xdg-utils
 #### Optional Dependencies
 
 ```
-python3-zeroconf     # iPhone sync service discovery
 espeak-ng            # Spoken reminders
 ```
 
