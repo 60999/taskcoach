@@ -103,7 +103,7 @@ jobs:
           APPDATA="build.in/debian/taskcoach.appdata.xml"
 
           # Update the release version and date
-          sed -i "s|<release version=\"[^\"]*\" date=\"[^\"]*\"/>|<release version=\"${VERSION}\" date=\"${RELEASE_DATE}\"/>|" "$APPDATA"
+          sed -i "s|<release version=\"[^\"]*\" type=\"stable\" date=\"[^\"]*\"/>|<release version=\"${VERSION}\" type=\"stable\" date=\"${RELEASE_DATE}\"/>|" "$APPDATA"
 
           echo "Updated appdata.xml:"
           cat "$APPDATA"
