@@ -111,7 +111,7 @@ jobs:
           # Add <releases> section to appdata.xml for App Center version display
           VERSION="${{ steps.version.outputs.version }}"
           RELEASE_DATE=$(date +%Y-%m-%d)
-          APPDATA="debian/taskcoach.appdata.xml"
+          APPDATA="build.in/debian/taskcoach.appdata.xml"
 
           # Check if releases section already exists
           if grep -q "<releases>" "$APPDATA"; then
