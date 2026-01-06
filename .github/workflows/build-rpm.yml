@@ -95,21 +95,15 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
-      - name: Update appdata.xml with releases section
+      - name: Update appdata.xml with current version
         run: |
-          # Add <releases> section to appdata.xml for software center version display
+          # Update version in appdata.xml releases section
           VERSION="${{ steps.version.outputs.version }}"
           RELEASE_DATE=$(date +%Y-%m-%d)
           APPDATA="build.in/debian/taskcoach.appdata.xml"
 
-          # Check if releases section already exists
-          if grep -q "<releases>" "$APPDATA"; then
-            echo "Releases section exists, updating..."
-            sed -i "s|<release version=\"[^\"]*\" date=\"[^\"]*\"/>|<release version=\"${VERSION}\" date=\"${RELEASE_DATE}\"/>|" "$APPDATA"
-          else
-            echo "Adding releases section..."
-            sed -i "s|</application>| <releases>\n  <release version=\"${VERSION}\" date=\"${RELEASE_DATE}\"/>\n </releases>\n</application>|" "$APPDATA"
-          fi
+          # Update the release version and date
+          sed -i "s|<release version=\"[^\"]*\" date=\"[^\"]*\">|<release version=\"${VERSION}\" date=\"${RELEASE_DATE}\">|" "$APPDATA"
 
           echo "Updated appdata.xml:"
           cat "$APPDATA"
