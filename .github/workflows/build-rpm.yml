@@ -95,19 +95,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
-      - name: Update appdata.xml with current version
-        run: |
-          # Update version in appdata.xml releases section
-          VERSION="${{ steps.version.outputs.version }}"
-          RELEASE_DATE=$(date +%Y-%m-%d)
-          APPDATA="build.in/debian/taskcoach.appdata.xml"
-
-          # Update the release version and date
-          sed -i "s|<release version=\"[^\"]*\" type=\"stable\" date=\"[^\"]*\"/>|<release version=\"${VERSION}\" type=\"stable\" date=\"${RELEASE_DATE}\"/>|" "$APPDATA"
-
-          echo "Updated appdata.xml:"
-          cat "$APPDATA"
-
       - name: Setup RPM build environment
         run: |
           rpmdev-setuptree
