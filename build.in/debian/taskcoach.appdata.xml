@@ -1,61 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2013-2026 Task Coach developers -->
-<component type="desktop-application">
-  <id>org.taskcoach.TaskCoach</id>
+<component type="desktop">
+  <id>taskcoach.desktop</id>
+  <launchable type="desktop-id">taskcoach.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0-or-later</project_license>
+  <project_license>GPL-3.0+</project_license>
   <name>Task Coach</name>
   <name xml:lang="fr">Task Coach</name>
   <summary>Your friendly task manager</summary>
-  <summary xml:lang="fr">Votre gestionnaire de tâches convivial</summary>
-
+  <summary xml:lang="fr">Votre gestionnaire de taches convivial</summary>
   <description>
     <p>Task Coach is an open source todo manager to manage personal tasks and todo lists. It supports composite tasks, i.e. tasks within tasks. In addition, Task Coach allows you to categorize your tasks, track efforts against a budget per task, and much more.</p>
-    <p>If espeak is installed, reminders can be spoken.</p>
-    <p xml:lang="fr">Task Coach est un gestionnaire de tâches libre pour gérer vos tâches et listes de choses à faire. Il supporte les tâches composites, càd les tâches faisant partie d'une autre. De plus, Task Coach vous permet de catégoriser vos tâches, suivre le temps passé par rapport à un budget associé à chaque tâche, et bien plus.</p>
-    <p xml:lang="fr">Si espeak est installé, les rappels peuvent être énoncés.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Composite tasks with unlimited nesting</li>
+      <li>Categories and tags for organization</li>
+      <li>Effort tracking with budgets</li>
+      <li>Reminders and recurring tasks</li>
+      <li>Notes and attachments</li>
+      <li>Multiple views: tree, list, calendar</li>
+    </ul>
+    <p xml:lang="fr">Task Coach est un gestionnaire de taches libre pour gerer vos taches et listes de choses a faire. Il supporte les taches composites. De plus, Task Coach vous permet de categoriser vos taches, suivre le temps passe par rapport a un budget associe a chaque tache, et bien plus.</p>
   </description>
-
-  <launchable type="desktop-id">taskcoach.desktop</launchable>
-
-  <icon type="stock">taskcoach</icon>
-
   <categories>
     <category>Office</category>
     <category>ProjectManagement</category>
   </categories>
-
   <url type="homepage">https://github.com/taskcoach/taskcoach</url>
   <url type="bugtracker">https://github.com/taskcoach/taskcoach/issues</url>
-  <url type="vcs-browser">https://github.com/taskcoach/taskcoach</url>
   <url type="help">https://github.com/taskcoach/taskcoach/wiki</url>
-
-  <developer id="org.taskcoach">
-    <name>Task Coach developers</name>
-  </developer>
-
   <provides>
     <binary>taskcoach</binary>
     <binary>taskcoach.py</binary>
   </provides>
-
-  <requires>
-    <display_length compare="ge">768</display_length>
-  </requires>
-
-  <supports>
-    <control>pointing</control>
-    <control>keyboard</control>
-  </supports>
-
-  <content_rating type="oars-1.1" />
-
+  <developer_name>Task Coach developers</developer_name>
+  <update_contact>developers_AT_taskcoach.org</update_contact>
+  <content_rating type="oars-1.1"/>
   <!-- Version and date are injected by build workflow from meta/data.py -->
   <releases>
-    <release version="0.0.0.0" date="1970-01-01">
-      <description>
-        <p>Bug fixes and improvements</p>
-      </description>
-    </release>
+    <release version="0.0.0.0" date="1970-01-01"/>
   </releases>
 </component>
