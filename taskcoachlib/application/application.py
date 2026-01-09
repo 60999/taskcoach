@@ -520,7 +520,33 @@ class Application(object, metaclass=patterns.Singleton):
         # Use native wxPython main loop instead of Twisted reactor
         # NOTE: Previously used reactor.run() with wxreactor integration.
         # Now using wx.App.MainLoop() directly for simpler event handling.
-        self.__wx_app.MainLoop()
+        try:
+            self.__wx_app.MainLoop()
+        finally:
+            # Explicitly cleanup wx.App to prevent crashes during Python shutdown
+            # See: https://github.com/wxWidgets/Phoenix/issues/429
+            if hasattr(self, '_signal_check_timer') and self._signal_check_timer:
+                self._signal_check_timer.Stop()
+
+            # On Windows with console (python.exe), detach from console before cleanup
+            # The crash only happens with python.exe (console subsystem), not pythonw.exe (GUI subsystem)
+            # This suggests the crash is related to console cleanup during Python shutdown
+            if operating_system.isWindows():
+                sys.stderr.flush()
+                sys.stdout.flush()
+                try:
+                    import ctypes
+                    # FreeConsole detaches the process from its console
+                    # This prevents console-related cleanup issues during Python shutdown
+                    ctypes.windll.kernel32.FreeConsole()
+                except Exception:
+                    pass
+                # Redirect stdout/stderr to devnull to prevent write errors after console detach
+                sys.stderr = open(os.devnull, 'w')
+                sys.stdout = open(os.devnull, 'w')
+
+            # Prevent destructor issues by explicitly destroying the app
+            self.__wx_app.Destroy()
 
     def __copy_default_templates(self):
         """Copy default templates that don't exist yet in the user's
@@ -771,25 +797,12 @@ Break the lock?"""
             self._signal_check_timer = wx.Timer()
             self._signal_check_timer.Start(500)  # Check every 500ms
 
-        if operating_system.isWindows():
-            import win32api  # pylint: disable=F0401
-
-            def quit_adapter(*args):
-                # The handler is called from something that is not the main thread, so we can't do
-                # much wx-related
-                event = threading.Event()
-
-                def quit():
-                    try:
-                        self.quitApplication()
-                    finally:
-                        event.set()
-
-                wx.CallAfter(quit)
-                event.wait()
-                return True
-
-            win32api.SetConsoleCtrlHandler(quit_adapter, True)
+        # NOTE: We intentionally do NOT use SetConsoleCtrlHandler on Windows.
+        # According to Microsoft docs, if an app loads gdi32.dll or user32.dll
+        # (which wxPython does), the handler doesn't receive CTRL_LOGOFF_EVENT
+        # or CTRL_SHUTDOWN_EVENT. It can also cause shutdown issues.
+        # Instead, we rely on wxPython's EVT_CLOSE and EVT_END_SESSION events.
+        # See: https://learn.microsoft.com/en-us/windows/console/setconsolectrlhandler
 
     @staticmethod
     def __create_mutex():
@@ -845,7 +858,13 @@ Break the lock?"""
         self.settings.setboolean("file", "inifileloaded", True)  # Reset
 
     def displayMessage(self, message):
-        self.mainwindow.displayMessage(message)
+        # Guard against deleted mainwindow during shutdown
+        if getattr(self, '_quitting', False):
+            return
+        try:
+            self.mainwindow.displayMessage(message)
+        except RuntimeError:
+            pass  # MainWindow C++ object already deleted
 
     def on_end_session(self):
         self.mainwindow.setShutdownInProgress()
@@ -874,12 +893,65 @@ Break the lock?"""
         except Exception:
             pass  # Best effort - don't prevent exit
 
+    def _stopAllTimers(self):
+        """Stop all known timers to prevent crashes during shutdown.
+
+        Timer events can be delivered after frames are destroyed but before
+        the program ends, causing access violations on Windows.
+        See: https://github.com/wxWidgets/Phoenix/issues/429
+        """
+        import sys
+        # Stop signal check timer
+        if hasattr(self, '_signal_check_timer') and self._signal_check_timer:
+            try:
+                self._signal_check_timer.Stop()
+            except Exception:
+                pass
+
+        # Stop all wx.Timer instances we can find
+        # Walk through all top-level windows and their children
+        def stop_timers_in_window(window):
+            if window is None:
+                return
+            # Check for timer attributes
+            for attr_name in ['__timer', '_timer', 'timer', '_sizeTimer', '_refreshTimer',
+                              '_dragTimer', '_findTimer', '_editTimer', '__tmr',
+                              'scheduledStatusDisplay']:
+                # Try both public and name-mangled private attributes
+                for prefix in ['', '_' + window.__class__.__name__]:
+                    full_name = prefix + attr_name
+                    timer = getattr(window, full_name, None)
+                    if timer is not None and hasattr(timer, 'Stop'):
+                        try:
+                            if hasattr(timer, 'IsRunning') and timer.IsRunning():
+                                timer.Stop()
+                        except Exception:
+                            pass
+            # Recurse into children
+            if hasattr(window, 'GetChildren'):
+                try:
+                    for child in window.GetChildren():
+                        stop_timers_in_window(child)
+                except Exception:
+                    pass
+
+        # Stop timers in all top-level windows
+        for window in wx.GetTopLevelWindows():
+            stop_timers_in_window(window)
+
     def quitApplication(self, force=False):
+        # Prevent re-entry - quitApplication may be called multiple times
+        # (e.g., from window close, signal handler, console ctrl handler)
+        if getattr(self, '_quitting', False):
+            return True
+        self._quitting = True
+
         if not self.iocontroller.close(force=force):
             return False
         self.save_all_settings()
         if hasattr(self, "taskBarIcon"):
             self.taskBarIcon.RemoveIcon()
+            self.taskBarIcon.Destroy()
         # Stop notification timers to prevent crashes during shutdown
         from taskcoachlib.notify.notifier_universal import NotificationCenter
         NotificationCenter().cleanup()
@@ -894,20 +966,16 @@ Break the lock?"""
         if operating_system.isGTK() and self.sessionMonitor is not None:
             self.sessionMonitor.stop()
 
-        # TEMPORARILY DISABLED: TEE shutdown and error popup
-        # has_errors = tee.shutdown_tee()
-        # if has_errors:
-        #     log_path = tee.get_log_path()
-        #     wx.MessageBox(
-        #         _('Errors have occured. Please see "%s"') % log_path,
-        #         _("Error"),
-        #         wx.OK,
-        #     )
+        # Stop all timers before closing windows to prevent crashes
+        # See: https://github.com/wxWidgets/Phoenix/issues/429
+        self._stopAllTimers()
 
-        # NOTE: stopTwisted() call removed - no longer using Twisted reactor.
-        # wxPython's MainLoop exits naturally when all windows are closed.
         # Explicitly close the main window to trigger exit.
         # Set shutdown flag so onClose() won't veto or recurse into quitApplication.
         self.mainwindow.setShutdownInProgress()
         self.mainwindow.Close()
+
+        # Force MainLoop to exit in case something is keeping it alive
+        # See: https://discuss.wxpython.org/t/wxpython-app-hanging-not-ending-mainloop/29797
+        wx.GetApp().ExitMainLoop()
         return True

@@ -125,9 +125,11 @@ class ArtProvider(wx.ArtProvider):
 
     @staticmethod
     def convertAlphaToMask(bitmap):
-        image = wx.ImageFromBitmap(bitmap)
+        # wxPython Phoenix: use bitmap method instead of module function
+        image = bitmap.ConvertToImage()
         image.ConvertAlphaToMask()
-        return wx.BitmapFromImage(image)
+        # wxPython Phoenix: use wx.Bitmap constructor instead of wx.BitmapFromImage
+        return wx.Bitmap(image)
 
 
 class IconProvider(object, metaclass=patterns.Singleton):
@@ -172,7 +174,8 @@ class IconProvider(object, metaclass=patterns.Singleton):
             iconTitle, wx.ART_FRAME_ICON, (size, size)
         )
         bitmap = ArtProvider.convertAlphaToMask(bitmap)
-        return wx.IconFromBitmap(bitmap)
+        # wxPython Phoenix: use wx.Icon constructor instead of wx.IconFromBitmap
+        return wx.Icon(bitmap)
 
 
 def iconBundle(iconTitle):
@@ -185,7 +188,12 @@ def getIcon(iconTitle):
 
 def init():
     if operating_system.isWindows() and wx.DisplayDepth() >= 32:
-        wx.SystemOptions_SetOption("msw.remap", "0")  # pragma: no cover
+        # wxPython 4.1+ uses wx.SystemOptions.SetOption (class method)
+        # Older versions used wx.SystemOptions_SetOption (module function)
+        try:
+            wx.SystemOptions.SetOption("msw.remap", "0")  # pragma: no cover
+        except AttributeError:
+            wx.SystemOptions_SetOption("msw.remap", "0")  # pragma: no cover
     try:
         wx.ArtProvider.PushProvider(ArtProvider())  # pylint: disable=E1101
     except AttributeError:

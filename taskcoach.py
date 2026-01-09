@@ -21,6 +21,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 
+# Early startup logging for debugging pythonw.exe silent failures
+def _setup_startup_log():
+    """Redirect stderr to a log file for debugging when run without console."""
+    if sys.platform == 'win32' and not sys.stderr.isatty():
+        try:
+            # Log to user's LOCALAPPDATA or temp directory
+            log_dir = os.environ.get('LOCALAPPDATA', os.environ.get('TEMP', '.'))
+            log_path = os.path.join(log_dir, 'TaskCoach', 'startup.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            sys.stderr = open(log_path, 'w', encoding='utf-8')
+            print(f"Task Coach startup log: {log_path}", file=sys.stderr)
+            print(f"Python: {sys.executable}", file=sys.stderr)
+            print(f"Working dir: {os.getcwd()}", file=sys.stderr)
+            print(f"Script: {__file__}", file=sys.stderr)
+        except Exception as e:
+            pass  # Can't log if we can't create the log file
+
+_setup_startup_log()
+
+# Fix DLL loading on Windows with Python embeddable package
+# The embeddable package doesn't process .pth files by default.
+# pywin32's .pth file adds DLL directories to PATH, which is required.
+# We must call site.addsitedir() to process .pth files before importing wx.
+if sys.platform == 'win32':
+    import site
+    # Find site-packages directory and process .pth files there
+    python_dir = os.path.dirname(os.path.abspath(sys.executable))
+    site_packages = os.path.join(python_dir, 'Lib', 'site-packages')
+    if os.path.isdir(site_packages):
+        site.addsitedir(site_packages)
+
+    # Python 3.8+ also needs explicit DLL directory registration
+    if sys.version_info >= (3, 8) and hasattr(os, 'add_dll_directory'):
+        # Add wx package directory for wxPython DLLs
+        wx_path = os.path.join(site_packages, 'wx')
+        if os.path.isdir(wx_path):
+            os.add_dll_directory(wx_path)
+        # Add pywin32_system32 for pywin32 DLLs
+        pywin32_dir = os.path.join(site_packages, 'pywin32_system32')
+        if os.path.isdir(pywin32_dir):
+            os.add_dll_directory(pywin32_dir)
+        # Add python directory itself
+        os.add_dll_directory(python_dir)
+
 # TEMPORARILY DISABLED: TEE stdout/stderr redirection to log file
 # This code uses os.dup2() to redirect file descriptors to a pipe, which
 # may cause issues on some systems. Until further testing, logging goes
@@ -34,7 +78,10 @@ import faulthandler
 # Enable faulthandler to get Python tracebacks on segfaults
 # This helps debug crashes in wxPython/GTK C++ code by showing which
 # Python code was executing when the crash occurred
-faulthandler.enable(all_threads=True)
+# NOTE: On Windows, only enable if stderr is redirected to a file,
+# as faulthandler writing to console during shutdown can cause issues
+if sys.platform != 'win32' or not sys.stderr.isatty():
+    faulthandler.enable(all_threads=True)
 
 
 def _set_wayland_app_id():
