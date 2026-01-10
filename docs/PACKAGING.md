@@ -53,7 +53,7 @@ No manual steps required for users installing from packages.
 | Debian Bookworm | Most deps | pyparsing, watchdog (version issues) |
 | Debian Trixie/Ubuntu Noble | All dependencies | None |
 | Arch/Manjaro | All except pypubsub (AUR), squaremap | squaremap |
-| Fedora 39/40 | Most deps | squaremap, pyparsing (version issues) |
+| Fedora | Most deps | squaremap, pyparsing (version issues) |
 
 ### How setup.py Works
 
@@ -71,23 +71,23 @@ The `setup.py` file lists core dependencies with version requirements where need
 
 This table shows how dependencies are handled in **built packages** and **setup scripts**.
 
-| Package | debian12 | ubuntu22 | debian13 | ubuntu24 | arch | fedora39 | fedora40 | appimage | windows | macos |
-|---------|:--------:|:--------:|:--------:|:--------:|:----:|:--------:|:--------:|:--------:|:-------:|:-----:|
-| wxpython | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| pypubsub | distro | distro | distro | distro | AUR | distro | distro | bundled | pip | pip |
-| pyparsing | **pip** | **pip** | distro | distro | distro | **pip** | **pip** | bundled | pip | pip |
-| watchdog | **pip** | **pip** | distro | distro | distro | distro | distro | bundled | pip | pip |
-| squaremap | distro | distro | distro | distro | **pip** | **pip** | **pip** | bundled | pip | pip |
-| six | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| lxml | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| numpy | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| chardet | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| python-dateutil | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| keyring | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| pyxdg | distro | distro | distro | distro | distro | distro | distro | bundled | — | — |
-| fasteners | distro | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
-| hypertreelist | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | bundled | **patch** | **patch** |
-| WMI | — | — | — | — | — | — | — | — | pip | — |
+| Package | debian12 | ubuntu22 | debian13 | ubuntu24 | arch | fedora | appimage | windows | macos |
+|---------|:--------:|:--------:|:--------:|:--------:|:----:|:------:|:--------:|:-------:|:-----:|
+| wxpython | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| pypubsub | distro | distro | distro | distro | AUR | distro | bundled | pip | pip |
+| pyparsing | **pip** | **pip** | distro | distro | distro | **pip** | bundled | pip | pip |
+| watchdog | **pip** | **pip** | distro | distro | distro | distro | bundled | pip | pip |
+| squaremap | distro | distro | distro | distro | **pip** | **pip** | bundled | pip | pip |
+| six | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| lxml | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| numpy | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| chardet | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| python-dateutil | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| keyring | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| pyxdg | distro | distro | distro | distro | distro | distro | bundled | — | — |
+| fasteners | distro | distro | distro | distro | distro | distro | bundled | pip | pip |
+| hypertreelist | **patch** | **patch** | **patch** | **patch** | **patch** | **patch** | bundled | **patch** | **patch** |
+| WMI | — | — | — | — | — | — | — | pip | — |
 
 **Key:**
 - `distro` = Installed from distribution repos (required dependency)
@@ -107,7 +107,6 @@ This table shows how dependencies are handled in **built packages** and **setup 
 | Ubuntu 24.04 Noble | ubuntu24 | 3.12 | 4.2.1 | `setup_ubuntu2404_noble.sh` | `build-deb.yml` | Distro deps sufficient |
 | Arch Linux | arch | latest | latest | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
 | Manjaro | arch | latest | latest | `setup_arch.sh` | `build-arch.yml` | pip: squaremap; pypubsub from AUR |
-| Fedora 39 | fedora39 | 3.12 | 4.2.1 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
 | Fedora 40 | fedora40 | 3.12 | 4.2.1 | `setup_fedora.sh` | `build-rpm.yml` | pip: squaremap, pyparsing |
 | **AppImage** | appimage | **3.11** | **4.2.4** | — | `build-appimage.yml` | Bundles Python + all deps |
 | **Windows** | windows | **3.11** | **4.2.x** | — | `build-windows.yml` | Python embed + Inno Setup |
@@ -357,8 +356,8 @@ taskcoach (1.6.1-1~ppa1) noble; urgency=medium
 
 | Codename | Version | wxPython | Status |
 |----------|---------|----------|--------|
-| Noble | 24.04 LTS | 4.2.1 | Patch required |
 | Jammy | 22.04 LTS | 4.1.1 | Patch required |
+| Noble | 24.04 LTS | 4.2.1 | Patch required |
 | Oracular | 24.10 | 4.2.1 | Patch required |
 
 ## Official Debian Packaging (For Debian Maintainers)
@@ -732,8 +731,9 @@ squaremap           # Hierarchical data visualization
 
 | Distro | Python | Notes |
 |--------|--------|-------|
-| Fedora 39 | 3.12 | Current stable release |
 | Fedora 40 | 3.12 | Current stable release |
+
+**Fedora 39 (disabled):** Fedora 39 and 40 builds are identical (same dependencies, same spec file). The noarch RPM built on Fedora 40 works on both. To reactivate Fedora 39 builds, uncomment the matrix entry in `.github/workflows/build-rpm.yml`.
 
 **Spec file approach:** We use `%py3_build` and `%py3_install` macros. While Fedora's newest guidelines prefer `%pyproject_wheel`/`%pyproject_install`, the older macros provide broader compatibility.
 
@@ -750,7 +750,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - distro: fedora:39
           - distro: fedora:40
     runs-on: ubuntu-latest
     container: ${{ matrix.distro }}
@@ -760,7 +759,7 @@ jobs:
 ```
 
 Features:
-- Builds on Fedora 39 and Fedora 40
+- Builds on Fedora 40 (noarch RPM works on Fedora 39 too)
 - Tests installation on clean containers
 - Uploads packages as artifacts
 - Creates GitHub releases on version tags
@@ -769,7 +768,7 @@ Features:
 
 | Distribution | Version | Tested | Notes |
 |--------------|---------|--------|-------|
-| Fedora | 39, 40 | ✓ | Primary target |
+| Fedora | 40 | ✓ | Primary target (noarch RPM works on 39 too) |
 
 ---
 
@@ -855,7 +854,7 @@ TaskCoach.AppDir/
 
 `.github/workflows/build-appimage.yml`
 
-Triggers on push to main/master, version tags, and PRs. Tests on Debian Bookworm, Ubuntu 22.04/24.04, and Fedora 39.
+Triggers on push to main/master, version tags, and PRs. Tests on Debian Bookworm, Ubuntu 22.04/24.04, and Fedora 40.
 
 #### Local Build
 
