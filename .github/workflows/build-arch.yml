@@ -58,6 +58,9 @@ jobs:
       - name: Install build dependencies
         run: |
           pacman -S --noconfirm --needed \
+            python-build \
+            python-installer \
+            python-wheel \
             python-wxpython \
             python-six \
             python-lxml \
@@ -213,10 +216,22 @@ jobs:
                 exit 1
               }
 
+              # Debug: Show Python and site-packages info
+              echo "Python version:"
+              python3 --version
+              echo "Site-packages locations:"
+              python3 -c "import site; print(site.getsitepackages())"
+
               # Check that key files exist
               echo "Checking installed files..."
               SITE_PACKAGES=$(python3 -c "import site; print(site.getsitepackages()[0])")
-              test -d "$SITE_PACKAGES/taskcoachlib" && echo "SUCCESS: taskcoachlib installed"
+              echo "Checking $SITE_PACKAGES for taskcoachlib..."
+              ls -la "$SITE_PACKAGES/" | grep -i task || echo "No taskcoach found in site-packages"
+              test -d "$SITE_PACKAGES/taskcoachlib" && echo "SUCCESS: taskcoachlib directory exists"
+
+              # Debug: Check pacman file list
+              echo "Files installed by taskcoach package:"
+              pacman -Ql taskcoach | grep -E "\.py$|site-packages" | head -20
 
               # Test that Python can import the module
               echo "Testing Python import..."
@@ -229,77 +244,6 @@ jobs:
               test -f /usr/share/pixmaps/taskcoach.png && echo "SUCCESS: Icon installed"
 
               echo "All installation tests passed!"
-            '
-
-  # Test on Manjaro (optional - Manjaro Docker images often have keyring issues)
-  test-manjaro:
-    name: Test install on Manjaro
-    needs: build-arch
-    runs-on: ubuntu-latest
-    continue-on-error: true  # Manjaro Docker images often have stale keyrings
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          pattern: taskcoach-*-arch-linux
-          merge-multiple: true
-          path: packages
-
-      - name: Test installation in Docker
-        run: |
-          # Find the package file
-          PKG_FILE=$(ls packages/*.pkg.tar.* 2>/dev/null | head -1)
-          echo "Testing installation of: $PKG_FILE"
-
-          # Run installation test in Docker using Manjaro image
-          docker run --rm \
-            -v "$(pwd)/packages:/packages:ro" \
-            manjarolinux/base:latest \
-            bash -c '
-              set -e
-
-              # Refresh keyring first (Manjaro Docker images often have stale keys)
-              echo "Refreshing Manjaro keyring..."
-              pacman-key --init || true
-              pacman-key --populate archlinux manjaro || true
-              pacman -Sy --noconfirm archlinux-keyring manjaro-keyring || true
-
-              # Update system
-              echo "Updating system..."
-              pacman -Syu --noconfirm
-
-              # Install the package
-              echo "Installing package..."
-              pacman -U --noconfirm /packages/*.pkg.tar.* || {
-                echo "Installing dependencies..."
-                # Install dependencies first if needed
-                pacman -S --noconfirm --needed \
-                  python-wxpython \
-                  python-six \
-                  python-lxml \
-                  python-numpy \
-                  python-dateutil \
-                  python-chardet \
-                  python-keyring \
-                  python-pyparsing \
-                  python-pyxdg \
-                  python-watchdog \
-                  python-fasteners \
-                  libxss \
-                  xdg-utils
-                pacman -U --noconfirm /packages/*.pkg.tar.*
-              }
-
-              # Verify installation
-              echo "Verifying installation..."
-              pacman -Q taskcoach && echo "SUCCESS: Package installed on Manjaro"
-
-              # Test Python import
-              echo "Testing Python import..."
-              python3 -c "import taskcoachlib; print(\"SUCCESS: taskcoachlib works on Manjaro\")"
-
-              echo "All Manjaro tests passed!"
             '
 
   # Create release with packages
