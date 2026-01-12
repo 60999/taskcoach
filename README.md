@@ -10,6 +10,8 @@ Download the package for your system from the [latest release](https://github.co
 
 | Platform | Package |
 |----------|---------|
+| Windows | `[TaskCoach-2.0.1.9-windows-x64-setup.exe)` |
+| Windows (portable) | `TaskCoach-2.0.1.9-windows-x64-portable.zip` | 
 | Debian 12 (Bookworm) | `taskcoach_2.0.1.9_debian-12-bookworm.deb` |
 | Debian 13 (Trixie) | `taskcoach_2.0.1.9_debian-13-trixie.deb` |
 | Debian Sid | `taskcoach_2.0.1.9_debian-sid.deb` |
