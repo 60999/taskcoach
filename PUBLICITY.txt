@@ -28,6 +28,7 @@ Open Directory         http://dmoz.org/Computers/Software/Freeware/Personal_Info
 Python Packages Index  http://pypi.python.org/pypi/TaskCoach/
 Freeware Home          http://www.freewarehome.com/
 Wikipedia              http://en.wikipedia.org/wiki/Task_Coach
+AlternativeTo          https://alternativeto.net/software/task-coach/about/
 MacSoftwareUsingPython http://wiki.python.org/moin/MacPython/MacSoftwareUsingPython
 CNET Upload.com        http://www.upload.com
 Ohloh                  http://www.ohloh.net/p/taskcoach
