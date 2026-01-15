@@ -1,7 +1,7 @@
 Source: taskcoach
 Section: productivity
 Priority: optional
-Maintainer: Réal Carbonneau
+Maintainer: Réal Carbonneau <contact@realcarbonneau.com>
 Build-Depends: debhelper-compat (= 13),
                dh-python,
                python3-all,

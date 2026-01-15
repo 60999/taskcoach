@@ -41,10 +41,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================
 
 version = "2.0.1"  # Major.Minor.Milestone
-patch = "22"  # Patch number - INCREMENT THIS for each release
+patch = "23"  # Patch number - INCREMENT THIS for each release
 version_full = f"{version}.{patch}"  # Full version: 2.0.1.18
 
-release_day = "14"  # Day of the release (1-31)
+release_day = "15"  # Day of the release (1-31)
 release_month = "January"  # Month of the release
 release_year = "2026"  # Year of the release
 
@@ -124,8 +124,8 @@ long_description = (
 )
 keywords = "task manager, todo list, pim, time registration, track effort"
 author_first, author_last = "Frank", "Niessink"  # Needed for PAD file
-author = "%s %s, Jerome Laheurte, and Aaron Wolf" % (author_first, author_last)
-author_unicode = "%s %s, Jérôme Laheurte, and Aaron Wolf" % (
+author = "%s %s, Jerome Laheurte, Aaron Wolf, and Real Carbonneau" % (author_first, author_last)
+author_unicode = "%s %s, Jérôme Laheurte, Aaron Wolf, and Réal Carbonneau" % (
     author_first,
     author_last,
 )

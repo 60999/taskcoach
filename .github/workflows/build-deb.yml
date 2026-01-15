@@ -102,7 +102,7 @@ jobs:
           echo "" >> debian/changelog
           echo "  * Release ${VERSION}" >> debian/changelog
           echo "" >> debian/changelog
-          echo " -- Réal Carbonneau  ${DATE}" >> debian/changelog
+          echo " -- Réal Carbonneau <contact@realcarbonneau.com>  ${DATE}" >> debian/changelog
           echo "" >> debian/changelog
           echo "Updated debian/changelog:"
           cat debian/changelog

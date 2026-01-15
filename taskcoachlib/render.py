@@ -140,12 +140,11 @@ else:
 def rawTimeFunc(dt, minutes=True, seconds=False):
     if seconds:
         fmt = timeWithSecondsFormat
+    elif minutes:
+        fmt = timeWithMinutesFormat
     else:
-        if minutes:
-            fmt = timeWithMinutesFormat
-        else:
-            fmt = timeFormat
-    return datemodule.DateTime.strftime(dt, fmt)
+        fmt = timeFormat
+    return dt.strftime(fmt)
 
 
 dateFormat = "%x"
@@ -178,45 +177,26 @@ if operating_system.isWindows():
             return operating_system.decodeSystemString(
                 win32api.GetTimeFormat(0x400, 0, None, None)
             )
-        # pywintypes.Time() can't handle dates far in the future (e.g., year 3333)
-        # due to mktime limitations on Windows. Fall back to strftime for such dates.
-        try:
-            pytime = pywintypes.Time(dt)
-        except (OverflowError, OSError):
-            # Fall back to Python's strftime for dates outside Windows range
-            if seconds:
-                return dt.strftime("%H:%M:%S")
-            elif minutes:
-                return dt.strftime("%H:%M")
-            else:
-                return dt.strftime("%H")
+        # Use strftime directly to avoid pywintypes.Time() timezone issues.
+        # pywintypes.Time() interprets naive datetimes as UTC and converts to
+        # local time, causing times like 07:00 to display as 06:00 in UTC+1.
         if seconds:
-            # You can't include seconds without minutes
-            flags = 0x0
+            fmt = timeWithSecondsFormat
+        elif minutes:
+            fmt = timeWithMinutesFormat
         else:
-            if minutes:
-                flags = 0x2
-            else:
-                flags = 0x1
-        return operating_system.decodeSystemString(
-            win32api.GetTimeFormat(0x400, flags, pytime, None)
-        )
+            fmt = timeFormat
+        return operating_system.decodeSystemString(dt.strftime(fmt))
 
     def rawDateFunc(dt):
         if dt is None:
             return operating_system.decodeSystemString(
                 win32api.GetDateFormat(0x400, 0, None, None)
             )
-        # pywintypes.Time() can't handle dates far in the future (e.g., year 3333)
-        # due to mktime limitations on Windows. Fall back to strftime for such dates.
-        try:
-            pytime = pywintypes.Time(dt)
-        except (OverflowError, OSError):
-            # Fall back to Python's strftime for dates outside Windows range
-            return dt.strftime("%x")
-        return operating_system.decodeSystemString(
-            win32api.GetDateFormat(0x400, 0, pytime, None)
-        )
+        # Use strftime directly to avoid pywintypes.Time() timezone issues.
+        # pywintypes.Time() interprets naive datetimes as UTC and converts to
+        # local time, which can shift dates when times are near midnight.
+        return operating_system.decodeSystemString(dt.strftime("%x"))
 
 elif operating_system.isMac():
     # Use simple strftime formatting on macOS
@@ -242,10 +222,12 @@ timeFunc = lambda dt, minutes=True, seconds=False: operating_system.decodeSystem
     rawTimeFunc(dt, minutes=minutes, seconds=seconds)
 )
 
-dateTimeFunc = lambda dt=None, humanReadable=False: "%s %s" % (
-    dateFunc(dt, humanReadable=humanReadable),
-    timeFunc(dt),
-)
+def dateTimeFunc(dt=None, humanReadable=False):
+    """Format date and time together. Uses time() to avoid Windows timezone issues."""
+    return "%s %s" % (
+        dateFunc(dt, humanReadable=humanReadable),
+        time(dt),
+    )
 
 
 def date(aDateTime, humanReadable=False):
@@ -305,36 +287,14 @@ def dateTimePeriod(start, stop, humanReadable=False):
 
 
 def time(dateTime, seconds=False, minutes=True):
-    """Format a time or datetime for display.
-
-    For time objects (not full datetimes) on Windows, we use Python's strftime
-    directly to avoid timezone issues with pywintypes.Time(). The Windows API
-    interprets naive datetimes as UTC and converts to local time, which causes
-    incorrect offsets when formatting standalone times.
-    """
-    is_time_only = False
+    """Format a time or datetime for display."""
     try:
         # strftime doesn't handle years before 1900, be prepared:
         dateTime = dateTime.replace(year=2000)
     except TypeError:  # We got a time instead of a dateTime
-        is_time_only = True
-        # For time-only values on Windows, use plain datetime to avoid
-        # pywintypes.Time() timezone conversion issues
-        if operating_system.isWindows():
-            import datetime as dt
-            dateTime = dt.datetime(2000, 1, 1, dateTime.hour, dateTime.minute, dateTime.second)
-            if seconds:
-                fmt = timeWithSecondsFormat
-            elif minutes:
-                fmt = timeWithMinutesFormat
-            else:
-                fmt = timeFormat
-            return operating_system.decodeSystemString(dateTime.strftime(fmt))
-        else:
-            # On Linux/Mac, use datemodule.DateTime which rawTimeFunc expects
-            dateTime = datemodule.Now().replace(
-                hour=dateTime.hour, minute=dateTime.minute, second=dateTime.second
-            )
+        # Convert time to datetime for strftime
+        import datetime as dt
+        dateTime = dt.datetime(2000, 1, 1, dateTime.hour, dateTime.minute, dateTime.second)
 
     return timeFunc(dateTime, minutes=minutes, seconds=seconds)
 

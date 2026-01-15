@@ -800,20 +800,34 @@ helpHTML = (
 )
 
 
-def _get_splash_path():
-    """Get the path to the legacy splash screen image."""
-    splash_path = os.path.join(os.path.dirname(__file__), "..", "gui", "icons", "splash.png")
-    splash_path = os.path.normpath(splash_path)
+def _get_splash_url():
+    """Get the file:// URL to the splash screen image.
+
+    Returns a properly formatted file:// URL that works on all platforms
+    (Windows needs file:///C:/path, Unix needs file:///path).
+    """
+    from urllib.request import pathname2url
+    splash_path = os.path.join(os.path.dirname(__file__), "..", "gui", "icons", "splash.jpg")
+    splash_path = os.path.normpath(os.path.abspath(splash_path))
     if os.path.exists(splash_path):
-        return splash_path
+        return "file://" + pathname2url(splash_path)
     return None
 
+
+# Build About dialog HTML with splash screen after title
+_splash_url = _get_splash_url()
+_splash_html = '<p><img src="%s" alt="Task Coach" /></p>\n' % _splash_url if _splash_url else ""
 
 aboutHTML = (
     _(
         """<h4>%(name)s - %(description)s</h4>
-<h5>Version %(version_full)s %(release_status)s, %(date)s</h5>
-<p>By %(author)s &lt;%(author_email)s&gt;<p>
+"""
+    )
+    % meta.metaDict
+    + _splash_html
+    + _(
+        """<h5>Version %(version_full)s %(release_status)s, %(date)s</h5>
+<p>By %(author)s</p>
 <p><a href="%(url)s" target="_blank">%(url)s</a></p>
 <p>%(copyright)s</p>
 <p>%(license_notice_html)s</p>
@@ -821,20 +835,3 @@ aboutHTML = (
     )
     % meta.metaDict
 )
-
-# Add legacy splash screen to About dialog
-# Note: wx.html.HtmlWindow doesn't support data URIs, so we use file:// path
-_splash_path = _get_splash_path()
-if _splash_path:
-    aboutHTML += """
-<hr>
-<h5>Legacy Splash Screen</h5>
-<p>This splash screen was displayed on startup in earlier versions of Task Coach.</p>
-<p><img src="file://%s" alt="Legacy Splash Screen" /></p>
-""" % _splash_path
-
-# Add legacy site reference
-aboutHTML += """
-<hr>
-<p>Legacy site (no longer maintained): <a href="https://taskcoach.org" target="_blank">https://taskcoach.org</a></p>
-"""

@@ -3,7 +3,7 @@
 #
 # Copyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>
 # Copyright (C) 2008 Marcin Zajaczkowski <mszpak@wp.pl>
-# Copyright (C) 2024 Réal Carbonneau <https://github.com/realcarbonneau>
+# Copyright (C) 2024 Réal Carbonneau <contact@realcarbonneau.com>
 #
 # Task Coach is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -132,23 +132,23 @@ install -Dm644 Welcome.tsk \
 %{_datadir}/%{name}/
 
 %changelog
-* Wed Jan 14 2026 Réal Carbonneau - 2.0.1.22-1
+* Wed Jan 14 2026 Réal Carbonneau <contact@realcarbonneau.com> - 2.0.1.22-1
 - Update for Fedora 43 (Python 3.13)
 - Fix RPM build with updated squaremap/pyparsing bundling
 
-* Sat Dec 27 2025 Réal Carbonneau - 2.0.0.80-1
+* Sat Dec 27 2025 Réal Carbonneau <contact@realcarbonneau.com> - 2.0.0.80-1
 - Centralize version in single VERSION file
 - Fix Calendar viewer crash on startup when previously opened
 - Fix wxPython 4.2+ compatibility issues with float arguments
 
-* Thu Dec 25 2025 Réal Carbonneau - 2.0.0.75-1
+* Thu Dec 25 2025 Réal Carbonneau <contact@realcarbonneau.com> - 2.0.0.75-1
 - Major version bump to 2.0.0 reflecting Python 3 modernization
 - Merged detached fork with 600+ patches and improvements
 - Full GTK3/wxPython 4.x compatibility
 - New GitHub Actions CI/CD workflows
 - Comprehensive packaging for Debian, Fedora, Arch, AppImage
 
-* Tue Dec 23 2025 Réal Carbonneau - 1.6.1.74-1
+* Tue Dec 23 2025 Réal Carbonneau <contact@realcarbonneau.com> - 1.6.1.74-1
 - Modernized spec file for Fedora 42+
 - Consistent dependency strategy: distro packages first, pip fallback
 - Bundled: squaremap (not in repos), pyparsing>=3.1.3 (version too old)

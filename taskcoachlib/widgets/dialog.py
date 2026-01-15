@@ -202,7 +202,7 @@ class HTMLDialog(Dialog):
 
     def createInterior(self):
         interior = HtmlWindowThatUsesWebBrowserForExternalLinks(
-            self._panel, -1, size=(550, 400)
+            self._panel, -1, size=(700, 550)
         )
         if self._direction:
             interior.SetLayoutDirection(self._direction)
