@@ -193,11 +193,19 @@ class TaskBarIcon(patterns.Observer, wx.adv.TaskBarIcon):
         log_step("setPopupMenu completed, menu:", menu, prefix="TRAY")
 
     def popupTaskBarMenu(self, event):  # pylint: disable=W0613
-        log_step("RIGHT-CLICK on taskbar icon, showing popup menu", prefix="TRAY")
-        log_step("popupmenu object:", self.popupmenu, prefix="TRAY")
-        self.popupmenu.updateMenu()
+        # Update dynamic submenus (e.g. StartEffortForTaskMenu) before showing.
+        # TaskBarMenu itself is a static Menu, but its DynamicMenu children
+        # need refreshing since registerForMenuUpdate is a no-op.
+        for item in self.popupmenu.GetMenuItems():
+            submenu = item.GetSubMenu()
+            if submenu and hasattr(submenu, 'updateMenu'):
+                submenu.updateMenu()
+        # Update state-dependent labels (e.g. Hide/Restore toggle)
+        for item in self.popupmenu.GetMenuItems():
+            cmd = getattr(item, '_command', None)
+            if cmd and hasattr(cmd, 'getMenuText'):
+                item.SetItemLabel(cmd.getMenuText())
         self.PopupMenu(self.popupmenu)
-        log_step("PopupMenu() returned", prefix="TRAY")
 
     # Getters:
 
