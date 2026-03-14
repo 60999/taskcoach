@@ -1,0 +1,1234 @@
+"""
+Task Coach - Your friendly task manager
+Copyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>
+
+Task Coach is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Task Coach is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from taskcoachlib import operating_system
+from taskcoachlib import patterns, persistence, help  # pylint: disable=W0622
+from taskcoachlib.meta.debug import log_step
+from taskcoachlib.domain import task, note, base, category
+from taskcoachlib.i18n import _
+from pubsub import pub
+from taskcoachlib.gui.newid import IdProvider
+from taskcoachlib.gui.icons.icon_library import icon_catalog, LIST_ICON_SIZE
+from taskcoachlib.config.defaults import (
+    MAIN_TOOLBAR_ICON_SIZE_SMALL, MAIN_TOOLBAR_ICON_SIZE_MEDIUM,
+    MAIN_TOOLBAR_ICON_SIZE_LARGE,
+)
+from . import uicommand
+import taskcoachlib.gui.viewer
+import wx
+import os
+
+
+class Menu(wx.Menu, uicommand.UICommandContainerMixin):
+    def __init__(self, window):
+        super().__init__()
+        self._window = window
+        self._accels = list()
+        self._observers = list()
+
+    def __len__(self):
+        return self.GetMenuItemCount()
+
+    def DestroyItem(self, menuItem):
+        if menuItem.GetSubMenu():
+            menuItem.GetSubMenu().clearMenu()
+        self._window.Unbind(wx.EVT_MENU, id=menuItem.GetId())
+        super().DestroyItem(menuItem)
+
+    def clearMenu(self):
+        """Remove all menu items."""
+        for menuItem in self.MenuItems:
+            self.DestroyItem(menuItem)
+        for observer in self._observers:
+            observer.removeInstance()
+        self._observers = list()
+
+    def accelerators(self):
+        return self._accels
+
+    def append_ui_command(self, ui_command):
+        cmd = ui_command.add_to_menu(self, self._window)
+        ui_command.menu = self
+        self._accels.extend(ui_command.accelerators())
+        if isinstance(ui_command, patterns.Observer):
+            self._observers.append(ui_command)
+        return cmd
+
+    # Keep old name as alias
+    appendUICommand = append_ui_command
+
+    def _update_menu_state(self):
+        """Update enabled and text state of all menu items. Called on menu open."""
+        for item in self.GetMenuItems():
+            if hasattr(item, 'update_state'):
+                item.update_state()
+
+    def appendMenu(self, text, subMenu, icon_id=None):
+        subMenuItem = wx.MenuItem(
+            self, id=IdProvider.get(), text=text, subMenu=subMenu
+        )
+        if icon_id:
+            subMenuItem.SetBitmap(
+                icon_catalog.get_bitmap(icon_id, LIST_ICON_SIZE)
+            )
+        self._accels.extend(subMenu.accelerators())
+        self.Append(subMenuItem)
+
+    def invokeMenuItem(self, menuItem):
+        """Programmatically invoke the menuItem. This is mainly for testing
+        purposes."""
+        self._window.ProcessEvent(
+            wx.CommandEvent(
+                wx.wxEVT_COMMAND_MENU_SELECTED, winid=menuItem.GetId()
+            )
+        )
+
+    def openMenu(self):
+        """Programmatically open the menu. This is mainly for testing
+        purposes."""
+        # On Mac OSX, an explicit UpdateWindowUI is needed to ensure that
+        # menu items are updated before the menu is opened. This is not needed
+        # on other platforms, but it doesn't hurt either.
+        self._window.UpdateWindowUI()
+        self._window.ProcessEvent(wx.MenuEvent(wx.wxEVT_MENU_OPEN, menu=self))
+
+
+class DynamicMenu(Menu):
+    """A menu that registers for events and then updates itself whenever the
+    event is fired."""
+
+    def __init__(self, window, parentMenu=None, labelInParentMenu=""):
+        """Initialize the menu. labelInParentMenu is needed to be able to
+        find this menu in its parentMenu."""
+        super().__init__(window)
+        self._parentMenu = parentMenu
+        self._labelInParentMenu = self.__GetLabelText(labelInParentMenu)
+        self.registerForMenuUpdate()
+        self.updateMenu()
+
+    def registerForMenuUpdate(self):
+        """Subclasses are responsible for binding an event to onUpdateMenu so
+        that the menu gets a chance to update itself at the right time."""
+        raise NotImplementedError
+
+    def onUpdateMenu(self, newValue, sender):
+        """This event handler should be called at the right times so that
+        the menu has a chance to update itself."""
+        try:  # Prepare for menu or window to be destroyed
+            self.updateMenu()
+        except (RuntimeError, wx.wxAssertionError):
+            log_step("onUpdateMenu: menu/window dead", prefix="DEAD-OBJ")
+
+    def onUpdateMenu_Deprecated(self, event=None):
+        """This event handler should be called at the right times so that
+        the menu has a chance to update itself."""
+        # If this is called by wx, 'skip' the event so that other event
+        # handlers get a chance too:
+        if event and hasattr(event, "Skip"):
+            event.Skip()
+            if event.GetMenu() != self._parentMenu:
+                return
+
+        try:  # Prepare for menu or window to be destroyed
+            self.updateMenu()
+        except (RuntimeError, wx.wxAssertionError):
+            log_step("onUpdateMenu_Deprecated: menu/window dead",
+                     prefix="DEAD-OBJ")
+
+    def updateMenu(self):
+        """Updating the menu consists of two steps: updating the menu item
+        of this menu in its parent menu, e.g. to enable or disable it, and
+        updating the menu items of this menu."""
+        self.updateMenuItemInParentMenu()
+        self.updateMenuItems()
+
+    def updateMenuItemInParentMenu(self):
+        """Enable or disable the menu item in the parent menu, depending on
+        what enabled() returns."""
+        if self._parentMenu:
+            myId = self.myId()
+            if myId != wx.NOT_FOUND:
+                self._parentMenu.Enable(myId, self.enabled())
+
+    def myId(self):
+        """Return the id of our menu item in the parent menu."""
+        # I'd rather use wx.Menu.FindItem, but it seems that that
+        # method currently does not work for menu items with accelerators
+        # (wxPython 2.8.6 on Ubuntu). When that is fixed replace the 7
+        # lines below with this one:
+        # myId = self._parentMenu.FindItem(self._labelInParentMenu)
+        for item in self._parentMenu.MenuItems:
+            if (
+                self.__GetLabelText(item.GetItemLabel())
+                == self._labelInParentMenu
+            ):
+                return item.Id
+        return wx.NOT_FOUND
+
+    def updateMenuItems(self):
+        """Update the menu items of this menu."""
+        pass
+
+    def enabled(self):
+        """Return a boolean indicating whether this menu should be enabled in
+        its parent menu. This method is called by
+        updateMenuItemInParentMenu(). It returns True by default. Override
+        in a subclass as needed."""
+        return True
+
+    @staticmethod
+    def __GetLabelText(menu_text):
+        """Remove accelerators from the menu_text. This is necessary because on
+        some platforms '&' is changed into '_' so menu_texts would compare
+        different even though they are really the same."""
+        return menu_text.replace("&", "").replace("_", "")
+
+
+class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
+    def __init__(
+        self, viewer, parentMenu=None, labelInParentMenu=""
+    ):  # pylint: disable=W0621
+        self._uiCommands = None
+        super().__init__(viewer, parentMenu, labelInParentMenu)
+
+    def registerForMenuUpdate(self):
+        # Refill the menu whenever the menu is opened, because the menu might
+        # depend on the status of the viewer:
+        self._window.Bind(wx.EVT_MENU_OPEN, self.onUpdateMenu_Deprecated)
+
+    def updateMenuItems(self):
+        newCommands = self.getUICommands()
+        try:
+            if newCommands == self._uiCommands:
+                return
+        except wx._core.PyDeadObjectError:  # pylint: disable=W0212
+            pass  # Old viewer was closed
+        self.clearMenu()
+        self.fillMenu(newCommands)
+        self._uiCommands = newCommands
+
+    def fillMenu(self, uiCommands):
+        self.appendUICommands(*uiCommands)  # pylint: disable=W0142
+
+    def getUICommands(self):
+        raise NotImplementedError
+
+
+class MainMenu(wx.MenuBar):
+    def __init__(
+        self, mainwindow, settings, iocontroller, viewerContainer, taskFile
+    ):
+        super().__init__()
+        accels = list()
+        for menu, text in [
+            (
+                FileMenu(mainwindow, settings, iocontroller, viewerContainer),
+                _("&File"),
+            ),
+            (
+                EditMenu(mainwindow, settings, iocontroller, viewerContainer),
+                _("&Edit"),
+            ),
+            (
+                ViewMenu(mainwindow, settings, viewerContainer, taskFile),
+                _("&View"),
+            ),
+            (
+                NewMenu(mainwindow, settings, taskFile, viewerContainer),
+                _("&New"),
+            ),
+            (
+                ActionMenu(mainwindow, settings, taskFile, viewerContainer),
+                _("&Actions"),
+            ),
+            (HelpMenu(mainwindow, settings, iocontroller), _("&Help")),
+        ]:
+            self.Append(menu, text)
+            accels.extend(menu.accelerators())
+        mainwindow.SetAcceleratorTable(wx.AcceleratorTable(accels))
+        mainwindow.Bind(wx.EVT_MENU_OPEN, self._on_menu_open)
+
+    def _on_menu_open(self, event):
+        event.Skip()
+        menu = event.GetMenu()
+        if menu and hasattr(menu, '_update_menu_state'):
+            menu._update_menu_state()
+
+
+class FileMenu(Menu, patterns.Observer):
+    """File menu with recent files list.
+
+    DESIGN NOTE (GTK3 Dynamic Menu Item Sizing):
+
+    Menus with dynamic items (recent files, undo/redo labels) must be
+    populated at init time and updated via Publisher events when the
+    underlying data changes — never during EVT_MENU_OPEN.
+
+    GTK3 calculates menu popup size from the item count at open time.
+    If items are added/removed inside EVT_MENU_OPEN, the size is wrong
+    on first popup (scroll arrows appear with plenty of space). Second
+    open sizes correctly because GTK caches the updated count.
+
+    See PUBLISHER_OBSERVER.md §GTK3 Dynamic Menu Item Sizing for the
+    full pattern and affected menus.
+    """
+
+    def __init__(self, mainwindow, settings, iocontroller, viewerContainer):
+        super().__init__(mainwindow)
+        patterns.Observer.__init__(self)
+        self.__settings = settings
+        self.__iocontroller = iocontroller
+        self.__recentFileUICommands = []
+        self.__separator = None
+        self.appendUICommands(
+            uicommand.FileOpen(iocontroller=iocontroller),
+            uicommand.FileMerge(iocontroller=iocontroller),
+            uicommand.FileClose(iocontroller=iocontroller),
+            None,
+            uicommand.FileSave(iocontroller=iocontroller),
+            uicommand.FileMergeDiskChanges(iocontroller=iocontroller),
+            uicommand.FileSaveAs(iocontroller=iocontroller),
+            uicommand.FileSaveSelection(
+                iocontroller=iocontroller, viewer=viewerContainer
+            ),
+        )
+        self.appendUICommands(
+            uicommand.FilePurgeDeletedItems(iocontroller=iocontroller),
+        )
+        self.appendUICommands(
+            None,
+            uicommand.FileSaveSelectedTaskAsTemplate(
+                iocontroller=iocontroller, viewer=viewerContainer
+            ),
+            uicommand.FileImportTemplate(iocontroller=iocontroller),
+            uicommand.FileEditTemplates(settings=settings),
+            None,
+            uicommand.PrintPageSetup(settings=settings),
+            uicommand.PrintPreview(viewer=viewerContainer, settings=settings),
+            uicommand.Print(viewer=viewerContainer, settings=settings),
+            None,
+        )
+        self.appendMenu(_("&Import"), ImportMenu(mainwindow, iocontroller),
+                        "oxygen_actions_document-import")
+        self.appendMenu(
+            _("&Export"),
+            ExportMenu(mainwindow, iocontroller, settings),
+            "oxygen_actions_document-export",
+        )
+        self.appendUICommands(
+            None,
+            uicommand.FileManageBackups(
+                iocontroller=iocontroller, settings=settings
+            ),
+        )
+        self.__recentFilesStartPosition = len(self)
+        self.appendUICommands(None, uicommand.FileQuit())
+
+        # Populate recent files at init (fixes GTK3 dynamic menu sizing)
+        self.__insertRecentFileMenuItems()
+
+        # Update recent files when settings change (Publisher, not pypubsub)
+        self.registerObserver(
+            self.__onRecentFilesChanged,
+            eventType="file.recentfiles",
+            eventSource=self.__settings,
+        )
+
+    def __onRecentFilesChanged(self, event):  # pylint: disable=W0613
+        """Update recent files menu when settings change."""
+        self.__removeRecentFileMenuItems()
+        self.__insertRecentFileMenuItems()
+
+    def __insertRecentFileMenuItems(self):
+        recent_files = self.__settings.getlist("file", "recentfiles")
+        if not recent_files:
+            return
+        max_recent = self.__settings.getint("file", "maxrecentfiles")
+        recent_files = recent_files[:max_recent]
+        self.__separator = self.InsertSeparator(
+            self.__recentFilesStartPosition
+        )
+        for index, recent_file in enumerate(recent_files):
+            file_number = index + 1
+            menu_position = self.__recentFilesStartPosition + 1 + index
+            ui_command = uicommand.RecentFileOpen(
+                filename=recent_file,
+                index=file_number,
+                iocontroller=self.__iocontroller,
+            )
+            ui_command.add_to_menu(self, self._window, menu_position)
+            self.__recentFileUICommands.append(ui_command)
+
+    def __removeRecentFileMenuItems(self):
+        for ui_command in self.__recentFileUICommands:
+            ui_command.remove_from_menu(self, self._window)
+        self.__recentFileUICommands = []
+        if self.__separator:
+            self.Remove(self.__separator)
+            self.__separator = None
+
+    def clearMenu(self):
+        super().clearMenu()
+        self.removeInstance()
+
+
+class ExportMenu(Menu):
+    def __init__(self, mainwindow, iocontroller, settings):
+        super().__init__(mainwindow)
+        kwargs = dict(iocontroller=iocontroller, settings=settings)
+        # pylint: disable=W0142
+        self.appendUICommands(
+            uicommand.FileExportAsHTML(**kwargs),
+            uicommand.FileExportAsCSV(**kwargs),
+            uicommand.FileExportAsICalendar(**kwargs),
+            uicommand.FileExportAsTodoTxt(**kwargs),
+        )
+
+
+class ImportMenu(Menu):
+    def __init__(self, mainwindow, iocontroller):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.FileImportCSV(iocontroller=iocontroller),
+            uicommand.FileImportTodoTxt(iocontroller=iocontroller),
+        )
+
+
+class TaskTemplateMenu(DynamicMenu):
+    def __init__(self, mainwindow, taskList, settings):
+        self.settings = settings
+        self.taskList = taskList
+        super().__init__(mainwindow)
+
+    def registerForMenuUpdate(self):
+        pub.subscribe(self.onTemplatesSaved, "templates.saved")
+
+    def onTemplatesSaved(self):
+        self.onUpdateMenu(None, None)
+
+    def updateMenuItems(self):
+        self.clearMenu()
+        self.fillMenu(self.getUICommands())
+
+    def fillMenu(self, uiCommands):
+        self.appendUICommands(*uiCommands)  # pylint: disable=W0142
+
+    def getUICommands(self):
+        path = self.settings.pathToTemplatesDir()
+        commands = [
+            uicommand.TaskNewFromTemplate(
+                os.path.join(path, name),
+                taskList=self.taskList,
+                settings=self.settings,
+            )
+            for name in persistence.TemplateList(path).names()
+        ]
+        return commands
+
+
+class EditMenu(Menu):
+    def __init__(self, mainwindow, settings, iocontroller, viewerContainer):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.EditUndo(),
+            uicommand.EditRedo(),
+            None,
+            uicommand.EditCut(viewer=viewerContainer, id=wx.ID_CUT),
+            uicommand.EditCopy(viewer=viewerContainer, id=wx.ID_COPY),
+            uicommand.EditPaste(viewer=viewerContainer),
+            uicommand.EditPasteAsSubItem(viewer=viewerContainer),
+            None,
+            uicommand.Edit(viewer=viewerContainer, id=wx.ID_EDIT),
+            uicommand.Delete(viewer=viewerContainer, id=wx.ID_DELETE),
+            None,
+            uicommand.SelectAll(viewer=viewerContainer),
+            uicommand.ClearSelection(viewer=viewerContainer),
+            None,
+            uicommand.EditPreferences(settings),
+        )
+
+
+
+
+activateNextViewerId = wx.NewId()
+activatePreviousViewerId = wx.NewId()
+
+
+class ViewMenu(Menu):
+    def __init__(self, mainwindow, settings, viewerContainer, taskFile):
+        super().__init__(mainwindow)
+        self.appendMenu(
+            _("&New viewer"),
+            ViewViewerMenu(mainwindow, settings, viewerContainer, taskFile),
+            "nuvola_actions_tab-new-background",
+        )
+        activateNextViewer = uicommand.ActivateViewer(
+            viewer=viewerContainer,
+            menu_text=_("&Activate next viewer\tCtrl+PgDn"),
+            help_text=help.viewNextViewer,
+            forward=True,
+            icon_id="nuvola_actions_tab-duplicate",
+            id=activateNextViewerId,
+        )
+        activatePreviousViewer = uicommand.ActivateViewer(
+            viewer=viewerContainer,
+            menu_text=_("Activate &previous viewer\tCtrl+PgUp"),
+            help_text=help.viewPreviousViewer,
+            forward=False,
+            icon_id="taskcoach_actions_tab-duplicate-left",
+            id=activatePreviousViewerId,
+        )
+        self.appendUICommands(
+            activateNextViewer,
+            activatePreviousViewer,
+            uicommand.RenameViewer(viewer=viewerContainer),
+            None,
+        )
+        self.appendMenu(_("&Mode"), ModeMenu(mainwindow, self, _("&Mode")))
+        self.appendMenu(
+            _("&Filter"), FilterMenu(mainwindow, self, _("&Filter"))
+        )
+        self.appendMenu(_("&Sort"), SortMenu(mainwindow, self, _("&Sort")))
+        self.appendMenu(
+            _("&Columns"), ColumnMenu(mainwindow, self, _("&Columns"))
+        )
+        self.appendMenu(
+            _("&Rounding"), RoundingMenu(mainwindow, self, _("&Rounding"))
+        )
+        self.appendUICommands(
+            None,
+            uicommand.ViewExpandAll(viewer=viewerContainer),
+            uicommand.ViewCollapseAll(viewer=viewerContainer),
+            None,
+        )
+        self.appendMenu(_("T&oolbar"), ToolBarMenu(mainwindow, settings))
+        self.appendUICommands(
+            uicommand.UICheckCommand(
+                settings=settings,
+                menu_text=_("Status&bar"),
+                help_text=_("Show/hide status bar"),
+                setting="statusbar",
+            ),
+            None,
+            uicommand.ResetWindowLayout(),
+        )
+
+
+class ViewViewerMenu(Menu):
+    def __init__(self, mainwindow, settings, viewerContainer, taskFile):
+        super().__init__(mainwindow)
+        ViewViewer = uicommand.ViewViewer
+        kwargs = dict(
+            viewer=viewerContainer, taskFile=taskFile, settings=settings
+        )
+        # pylint: disable=W0142
+        viewViewerCommands = [
+            ViewViewer(
+                menu_text=_("&Task"),
+                help_text=_("Open a new tab with a viewer that displays tasks"),
+                viewerClass=taskcoachlib.gui.viewer.TaskViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("Task &statistics"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays task statistics"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.TaskStatsViewer,
+                **kwargs
+            ),
+        ]
+        # Add square map viewer only if squaremap is available
+        if taskcoachlib.gui.viewer.SquareTaskViewer is not None:
+            viewViewerCommands.append(
+                ViewViewer(
+                    menu_text=_("Task &square map"),
+                    help_text=_(
+                        "Open a new tab with a viewer that displays tasks in a square map"
+                    ),
+                    viewerClass=taskcoachlib.gui.viewer.SquareTaskViewer,
+                    **kwargs
+                )
+            )
+        viewViewerCommands += [
+            ViewViewer(
+                menu_text=_("T&imeline"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays a timeline of tasks and effort"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.TimelineViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("&Calendar"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays tasks in a calendar"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.CalendarViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("&Hierarchical calendar"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays task hierarchy in a calendar"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.HierarchicalCalendarViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("&Category"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays categories"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.CategoryViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("&Effort"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays efforts"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.EffortViewer,
+                **kwargs
+            ),
+            uicommand.ViewEffortViewerForSelectedTask(
+                menu_text=_("Eff&ort for selected task(s)"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays efforts for the selected task"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.EffortViewer,
+                **kwargs
+            ),
+            ViewViewer(
+                menu_text=_("&Note"),
+                help_text=_("Open a new tab with a viewer that displays notes"),
+                viewerClass=taskcoachlib.gui.viewer.NoteViewer,
+                **kwargs
+            ),
+        ]
+        try:
+            import igraph
+        except ImportError:
+            pass
+        else:
+            viewViewerCommands.append(
+                ViewViewer(
+                    menu_text=_("&Dependency Graph"),
+                    help_text=_(
+                        "Open a new tab with a viewer that dependencies between weighted tasks over time"
+                    ),
+                    viewerClass=taskcoachlib.gui.viewer.TaskInterdepsViewer,
+                    **kwargs
+                )
+            )
+        self.appendUICommands(*viewViewerCommands)
+
+
+class ModeMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    def enabled(self):
+        return self._window.viewer.hasModes() and bool(
+            self._window.viewer.getModeUICommands()
+        )
+
+    def getUICommands(self):
+        return self._window.viewer.getModeUICommands()
+
+
+class FilterMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    def enabled(self):
+        return self._window.viewer.isFilterable() and bool(
+            self._window.viewer.getFilterUICommands()
+        )
+
+    def getUICommands(self):
+        return self._window.viewer.getFilterUICommands()
+
+
+class ColumnMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    def enabled(self):
+        return self._window.viewer.hasHideableColumns()
+
+    def getUICommands(self):
+        return self._window.viewer.getColumnUICommands()
+
+
+class SortMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    def enabled(self):
+        return self._window.viewer.isSortable()
+
+    def getUICommands(self):
+        return self._window.viewer.getSortUICommands()
+
+
+class RoundingMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    def enabled(self):
+        return self._window.viewer.supportsRounding()
+
+    def getUICommands(self):
+        return self._window.viewer.getRoundingUICommands()
+
+
+class ToolBarMenu(Menu):
+    def __init__(self, mainwindow, settings):
+        super().__init__(mainwindow)
+        toolbarCommands = []
+        _S = MAIN_TOOLBAR_ICON_SIZE_SMALL
+        _M = MAIN_TOOLBAR_ICON_SIZE_MEDIUM
+        _L = MAIN_TOOLBAR_ICON_SIZE_LARGE
+        for value, menu_text, help_text in [
+            (None, _("&Hide"), _("Hide the toolbar")),
+            (
+                (_S, _S),
+                _("&Small images"),
+                _("Small images (%dx%d) on the toolbar") % (_S, _S),
+            ),
+            (
+                (_M, _M),
+                _("&Medium-sized images"),
+                _("Medium-sized images (%dx%d) on the toolbar") % (_M, _M),
+            ),
+            (
+                (_L, _L),
+                _("&Large images"),
+                _("Large images (%dx%d) on the toolbar") % (_L, _L),
+            ),
+        ]:
+            toolbarCommands.append(
+                uicommand.UIRadioCommand(
+                    settings=settings,
+                    setting="toolbar",
+                    value=value,
+                    menu_text=menu_text,
+                    help_text=help_text,
+                )
+            )
+        # pylint: disable=W0142
+        self.appendUICommands(*toolbarCommands)
+
+
+class NewMenu(Menu):
+    def __init__(self, mainwindow, settings, taskFile, viewerContainer):
+        super().__init__(mainwindow)
+        tasks = taskFile.tasks()
+        self.appendUICommands(
+            uicommand.TaskNew(taskList=tasks, settings=settings),
+            uicommand.NewTaskWithSelectedTasksAsPrerequisites(
+                taskList=tasks, viewer=viewerContainer, settings=settings
+            ),
+            uicommand.NewTaskWithSelectedTasksAsDependencies(
+                taskList=tasks, viewer=viewerContainer, settings=settings
+            ),
+        )
+        self.appendMenu(
+            _("New task from &template"),
+            TaskTemplateMenu(mainwindow, taskList=tasks, settings=settings),
+            "taskcoach_actions_newtmpl",
+        )
+        self.appendUICommands(
+            None,
+            uicommand.EffortNew(
+                viewer=viewerContainer,
+                effortList=taskFile.efforts(),
+                taskList=tasks,
+                settings=settings,
+            ),
+            uicommand.CategoryNew(
+                categories=taskFile.categories(), settings=settings
+            ),
+            uicommand.NoteNew(notes=taskFile.notes(), settings=settings),
+            None,
+            uicommand.NewSubItem(viewer=viewerContainer),
+        )
+
+
+class ActionMenu(Menu):
+    def __init__(self, mainwindow, settings, taskFile, viewerContainer):
+        super().__init__(mainwindow)
+        tasks = taskFile.tasks()
+        efforts = taskFile.efforts()
+        categories = taskFile.categories()
+        # Generic actions, applicable to all/most domain objects:
+        self.appendUICommands(
+            uicommand.AddAttachment(viewer=viewerContainer, settings=settings),
+            uicommand.OpenAllAttachments(
+                viewer=viewerContainer, settings=settings
+            ),
+            None,
+            uicommand.AddNote(viewer=viewerContainer, settings=settings),
+            uicommand.OpenAllNotes(viewer=viewerContainer, settings=settings),
+            None,
+            uicommand.Mail(viewer=viewerContainer),
+            None,
+        )
+        self.appendMenu(
+            _("&Toggle category"),
+            ToggleCategoryMenu(
+                mainwindow, categories=categories, viewer=viewerContainer
+            ),
+            "nuvola_places_folder-downloads",
+        )
+        # Start of task specific actions:
+        self.appendUICommands(
+            None,
+            uicommand.TaskMarkInactive(
+                settings=settings, viewer=viewerContainer
+            ),
+            uicommand.TaskMarkActive(
+                settings=settings, viewer=viewerContainer
+            ),
+            uicommand.TaskMarkCompleted(
+                settings=settings, viewer=viewerContainer
+            ),
+            None,
+        )
+        uicommand.TaskPriorityParentMenu(
+            viewer=viewerContainer
+        ).add_to_menu(
+            self, self._window,
+            sub_menu=TaskPriorityMenu(mainwindow, tasks, viewerContainer),
+        )
+        self.appendUICommands(
+            None,
+            uicommand.EffortStart(viewer=viewerContainer, taskList=tasks),
+            uicommand.EffortStop(
+                viewer=viewerContainer, effortList=efforts, taskList=tasks
+            ),
+            uicommand.EditTrackedTasks(taskList=tasks, settings=settings),
+        )
+
+
+class TaskPriorityMenu(Menu):
+    def __init__(self, mainwindow, task_list, viewer):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.TaskIncPriority(taskList=task_list, viewer=viewer),
+            uicommand.TaskDecPriority(taskList=task_list, viewer=viewer),
+            uicommand.TaskMaxPriority(taskList=task_list, viewer=viewer),
+            uicommand.TaskMinPriority(taskList=task_list, viewer=viewer),
+        )
+
+
+
+class HelpMenu(Menu):
+    def __init__(self, mainwindow, settings, iocontroller):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.Help(),
+            uicommand.FAQ(),
+            uicommand.Tips(settings=settings),
+            uicommand.Anonymize(iocontroller=iocontroller),
+            None,
+            uicommand.RequestSupport(),
+            uicommand.ReportBug(),
+            uicommand.RequestFeature(),
+            None,
+            uicommand.HelpTranslate(),
+            None,
+        )
+        self.appendUICommands(
+            uicommand.HelpAbout(),
+            uicommand.CheckForUpdate(settings=settings),
+            uicommand.HelpLicense(),
+        )
+
+
+class TaskBarMenu(Menu):
+    def __init__(self, taskBarIcon, settings, taskFile, viewer):
+        super().__init__(taskBarIcon)
+        tasks = taskFile.tasks()
+        efforts = taskFile.efforts()
+        self.appendUICommands(
+            uicommand.TaskNew(taskList=tasks, settings=settings)
+        )
+        self.appendMenu(
+            _("New task from &template"),
+            TaskTemplateMenu(taskBarIcon, taskList=tasks, settings=settings),
+            "taskcoach_actions_newtmpl",
+        )
+        self.appendUICommands(None)  # Separator
+        self.appendUICommands(
+            uicommand.EffortNew(
+                effortList=efforts, taskList=tasks, settings=settings
+            ),
+            uicommand.CategoryNew(
+                categories=taskFile.categories(), settings=settings
+            ),
+            uicommand.NoteNew(notes=taskFile.notes(), settings=settings),
+        )
+        self.appendUICommands(None)  # Separator
+        label = _("&Start tracking effort")
+        self.appendMenu(
+            label,
+            StartEffortForTaskMenu(
+                taskBarIcon, base.filter.DeletedFilter(tasks), self, label
+            ),
+            "nuvola_apps_clock",
+        )
+        self.appendUICommands(
+            uicommand.EffortStop(
+                viewer=viewer, effortList=efforts, taskList=tasks
+            )
+        )
+        self.appendUICommands(
+            None, uicommand.MainWindowRestore(), uicommand.FileQuit()
+        )
+
+
+class ToggleCategoryMenu(DynamicMenu):
+    def __init__(
+        self, mainwindow, categories, viewer
+    ):  # pylint: disable=W0621
+        self.categories = categories
+        self.viewer = viewer
+        super().__init__(mainwindow)
+
+    def registerForMenuUpdate(self):
+        for eventType in (
+            self.categories.addItemEventType(),
+            self.categories.removeItemEventType(),
+        ):
+            patterns.Publisher().registerObserver(
+                self.onUpdateMenu_Deprecated,
+                eventType=eventType,
+                eventSource=self.categories,
+            )
+        patterns.Publisher().registerObserver(
+            self.onUpdateMenu_Deprecated,
+            eventType=category.Category.subjectChangedEventType(),
+        )
+
+    def updateMenuItems(self):
+        self.clearMenu()
+        rootItems = self.categories.rootItems()
+        if rootItems:
+            self.addMenuItemsForCategories(rootItems, self)
+        else:
+            menuItem = self.Append(wx.ID_ANY, _("(No categories defined yet)"))
+            menuItem.Enable(False)
+
+    def addMenuItemsForCategories(self, categories, menu):
+        # pylint: disable=W0621
+        categories = categories[:]
+        categories.sort(key=lambda category: category.subject().lower())
+        for category in categories:
+            uiCommand = uicommand.ToggleCategory(
+                category=category, viewer=self.viewer
+            )
+            uiCommand.add_to_menu(menu, self._window)
+            if category.children():
+                subMenu = Menu(self._window)
+                self.addMenuItemsForCategories(category.children(), subMenu)
+                menu.appendMenu(category.subject(), subMenu, "taskcoach_actions_arrow_down_right")
+
+    def enabled(self):
+        return bool(self.categories)
+
+
+class StartEffortForTaskMenu(DynamicMenu):
+    def __init__(
+        self, taskBarIcon, tasks, parentMenu=None, labelInParentMenu=""
+    ):
+        self.tasks = tasks
+        super().__init__(taskBarIcon, parentMenu, labelInParentMenu)
+
+    def registerForMenuUpdate(self):
+        # No-op: menu is rebuilt on-demand in popupTaskBarMenu() instead of
+        # subscribing to every domain event.  The old approach exhausted wx
+        # menu-item IDs during recur() cascades (wxAssertionError 0x7fff).
+        pass
+
+    def updateMenuItems(self):
+        self.clearMenu()
+        trackableRootTasks = self._trackableRootTasks()
+        if not trackableRootTasks:
+            item = self.Append(wx.ID_ANY, _("All tasks are completed!"))
+            item.Enable(False)
+            return
+        trackableRootTasks.sort(key=lambda task: task.subject())
+        for trackableRootTask in trackableRootTasks:
+            self.addMenuItemForTask(trackableRootTask, self)
+
+    def addMenuItemForTask(self, task, menu):  # pylint: disable=W0621
+        uiCommand = uicommand.EffortStartForTask(
+            task=task, taskList=self.tasks
+        )
+        uiCommand.add_to_menu(menu, self._window)
+        trackableChildren = [
+            child
+            for child in task.children()
+            if child in self.tasks and not child.completed()
+        ]
+        if trackableChildren:
+            trackableChildren.sort(key=lambda child: child.subject())
+            subMenu = Menu(self._window)
+            for child in trackableChildren:
+                self.addMenuItemForTask(child, subMenu)
+            menu.AppendSubMenu(subMenu, _("%s (subtasks)") % task.subject())
+
+    def enabled(self):
+        return True
+
+    def _trackableRootTasks(self):
+        return [
+            rootTask
+            for rootTask in self.tasks.rootItems()
+            if not rootTask.completed()
+        ]
+
+
+class TaskPopupMenu(Menu):
+    def __init__(
+        self, mainwindow, settings, tasks, efforts, categories, taskViewer
+    ):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.EditCut(viewer=taskViewer),
+            uicommand.EditCopy(viewer=taskViewer),
+            uicommand.EditPaste(viewer=taskViewer),
+            uicommand.EditPasteAsSubItem(viewer=taskViewer),
+            None,
+            uicommand.Edit(viewer=taskViewer),
+            uicommand.Delete(viewer=taskViewer),
+            None,
+            uicommand.AddAttachment(viewer=taskViewer, settings=settings),
+            uicommand.OpenAllAttachments(viewer=taskViewer, settings=settings),
+            None,
+            uicommand.AddNote(viewer=taskViewer, settings=settings),
+            uicommand.OpenAllNotes(viewer=taskViewer, settings=settings),
+            None,
+            uicommand.Mail(viewer=taskViewer),
+            None,
+        )
+        self.appendMenu(
+            _("&Toggle category"),
+            ToggleCategoryMenu(
+                mainwindow, categories=categories, viewer=taskViewer
+            ),
+            "nuvola_places_folder-downloads",
+        )
+        self.appendUICommands(
+            None,
+            uicommand.TaskMarkInactive(settings=settings, viewer=taskViewer),
+            uicommand.TaskMarkActive(settings=settings, viewer=taskViewer),
+            uicommand.TaskMarkCompleted(settings=settings, viewer=taskViewer),
+            None,
+        )
+        uicommand.TaskPriorityParentMenu(
+            viewer=taskViewer
+        ).add_to_menu(
+            self, self._window,
+            sub_menu=TaskPriorityMenu(mainwindow, tasks, taskViewer),
+        )
+        self.appendUICommands(
+            None,
+            uicommand.EffortNew(
+                viewer=taskViewer,
+                effortList=efforts,
+                taskList=tasks,
+                settings=settings,
+            ),
+            uicommand.EffortStart(viewer=taskViewer, taskList=tasks),
+            uicommand.EffortStop(
+                viewer=taskViewer, effortList=efforts, taskList=tasks
+            ),
+            None,
+            uicommand.TaskNew(taskList=tasks, settings=settings),
+            uicommand.NewSubItem(viewer=taskViewer),
+        )
+
+
+class EffortPopupMenu(Menu):
+    def __init__(self, mainwindow, tasks, efforts, settings, effortViewer):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.EditCut(viewer=effortViewer),
+            uicommand.EditCopy(viewer=effortViewer),
+            uicommand.EditPaste(viewer=effortViewer),
+            None,
+            uicommand.Edit(viewer=effortViewer),
+            uicommand.Delete(viewer=effortViewer),
+            None,
+            uicommand.EffortNew(
+                viewer=effortViewer,
+                effortList=efforts,
+                taskList=tasks,
+                settings=settings,
+            ),
+            uicommand.EffortStartForEffort(
+                viewer=effortViewer, taskList=tasks
+            ),
+            uicommand.EffortStop(
+                viewer=effortViewer, effortList=efforts, taskList=tasks
+            ),
+        )
+
+
+class CategoryPopupMenu(Menu):
+    def __init__(
+        self, mainwindow, settings, taskFile, categoryViewer, localOnly=False
+    ):
+        super().__init__(mainwindow)
+        categories = categoryViewer.presentation()
+        tasks = taskFile.tasks()
+        notes = taskFile.notes()
+        self.appendUICommands(
+            uicommand.EditCut(viewer=categoryViewer),
+            uicommand.EditCopy(viewer=categoryViewer),
+            uicommand.EditPaste(viewer=categoryViewer),
+            uicommand.EditPasteAsSubItem(viewer=categoryViewer),
+            None,
+            uicommand.Edit(viewer=categoryViewer),
+            uicommand.Delete(viewer=categoryViewer),
+            None,
+            uicommand.AddAttachment(viewer=categoryViewer, settings=settings),
+            uicommand.OpenAllAttachments(
+                viewer=categoryViewer, settings=settings
+            ),
+            None,
+            uicommand.AddNote(viewer=categoryViewer, settings=settings),
+            uicommand.OpenAllNotes(viewer=categoryViewer, settings=settings),
+            None,
+            uicommand.Mail(viewer=categoryViewer),
+        )
+        if not localOnly:
+            self.appendUICommands(
+                None,
+                uicommand.NewTaskWithSelectedCategories(
+                    taskList=tasks,
+                    settings=settings,
+                    categories=categories,
+                    viewer=categoryViewer,
+                ),
+                uicommand.NewNoteWithSelectedCategories(
+                    notes=notes,
+                    settings=settings,
+                    categories=categories,
+                    viewer=categoryViewer,
+                ),
+            )
+        self.appendUICommands(
+            None,
+            uicommand.CategoryNew(categories=categories, settings=settings),
+            uicommand.NewSubItem(viewer=categoryViewer),
+        )
+
+
+class NotePopupMenu(Menu):
+    def __init__(self, mainwindow, settings, categories, noteViewer, notes=None):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.EditCut(viewer=noteViewer),
+            uicommand.EditCopy(viewer=noteViewer),
+            uicommand.EditPaste(viewer=noteViewer),
+            uicommand.EditPasteAsSubItem(viewer=noteViewer),
+            None,
+            uicommand.Edit(viewer=noteViewer),
+            uicommand.Delete(viewer=noteViewer),
+            None,
+            uicommand.AddAttachment(viewer=noteViewer, settings=settings),
+            uicommand.OpenAllAttachments(viewer=noteViewer, settings=settings),
+            None,
+            uicommand.Mail(viewer=noteViewer),
+            None,
+        )
+        self.appendMenu(
+            _("&Toggle category"),
+            ToggleCategoryMenu(
+                mainwindow, categories=categories, viewer=noteViewer
+            ),
+            "nuvola_places_folder-downloads",
+        )
+        self.appendUICommands(None)
+        if notes is not None:
+            self.appendUICommands(
+                uicommand.NoteNew(notes=notes, settings=settings, viewer=noteViewer),
+            )
+        self.appendUICommands(uicommand.NewSubItem(viewer=noteViewer))
+
+
+class ColumnPopupMenuMixin(object):
+    """Mixin class for column header popup menu's. These menu's get the
+    column index property set by the control popping up the menu to
+    indicate which column the user clicked. See
+    widgets._CtrlWithColumnPopupMenuMixin."""
+
+    def __setColumn(self, columnIndex):
+        self.__columnIndex = columnIndex  # pylint: disable=W0201
+
+    def __getColumn(self):
+        return self.__columnIndex
+
+    columnIndex = property(__getColumn, __setColumn)
+
+    def getUICommands(self):
+        if (
+            not self._window
+        ):  # Prevent PyDeadObject exception when running tests
+            return []
+        return [
+            uicommand.HideCurrentColumn(viewer=self._window),
+            None,
+        ] + self._window.getColumnUICommands()
+
+
+class ColumnPopupMenu(ColumnPopupMenuMixin, Menu):
+    """Column header popup menu."""
+
+    def __init__(self, window):
+        super().__init__(window)
+        self.appendUICommands(*self.getUICommands())
+
+
+class EffortViewerColumnPopupMenu(
+    ColumnPopupMenuMixin, DynamicMenuThatGetsUICommandsFromViewer
+):
+    """Column header popup menu."""
+
+    def registerForMenuUpdate(self):
+        pub.subscribe(self.onChangeAggregation, "effortviewer.aggregation")
+
+    def onChangeAggregation(self):
+        self.onUpdateMenu(None, None)
+
+
+class AttachmentPopupMenu(Menu):
+    def __init__(self, mainwindow, settings, attachments, attachmentViewer):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.EditCut(viewer=attachmentViewer),
+            uicommand.EditCopy(viewer=attachmentViewer),
+            uicommand.EditPaste(viewer=attachmentViewer),
+            None,
+            uicommand.Edit(viewer=attachmentViewer),
+            uicommand.Delete(viewer=attachmentViewer),
+            None,
+            uicommand.AddNote(viewer=attachmentViewer, settings=settings),
+            uicommand.OpenAllNotes(viewer=attachmentViewer, settings=settings),
+            None,
+            uicommand.AttachmentOpen(
+                viewer=attachmentViewer,
+                attachments=attachments,
+                settings=settings,
+            ),
+            None,
+            uicommand.AttachmentNew(
+                viewer=attachmentViewer,
+                attachments=attachments,
+                settings=settings,
+            ),
+        )

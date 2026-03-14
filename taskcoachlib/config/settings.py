@@ -1,0 +1,775 @@
+"""
+Task Coach - Your friendly task manager
+Copyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>
+
+Task Coach is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Task Coach is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from taskcoachlib import meta, patterns, operating_system
+from taskcoachlib.i18n import _
+from pubsub import pub
+import ast
+import configparser
+import os
+import sys
+import wx
+import shutil
+from . import defaults
+from taskcoachlib.meta.debug import log_step
+
+# Reverse mapping: new namespaced icon IDs -> old legacy names.
+# Used only when legacystatusicons is True, to write old-format ini.
+_LEGACY_REVERSE_MAP = {
+    "nuvola_actions_ledblue": "led_blue_icon",
+    "nuvola_actions_ledpurple": "led_purple_icon",
+    "nuvola_actions_ok": "checkmark_green_icon",
+    "nuvola_actions_ledred": "led_red_icon",
+    "taskcoach_actions_led_grey_icon": "led_grey_icon",
+    "nuvola_actions_ledorange": "led_orange_icon",
+}
+
+_LEGACY_STATUS_KEYS = (
+    "activetasks", "latetasks", "completedtasks",
+    "overduetasks", "inactivetasks", "duesoontasks",
+)
+
+
+class UnicodeAwareConfigParser(configparser.ConfigParser):
+    def __init__(self, *args, **kwargs):
+        if "interpolation" not in kwargs:
+            kwargs["interpolation"] = None
+        super().__init__(*args, **kwargs)
+
+
+class CachingConfigParser(UnicodeAwareConfigParser):
+    """ConfigParser is rather slow, so cache its values."""
+
+    def __init__(self, *args, **kwargs):
+        self.__cachedValues = dict()
+        super().__init__(*args, **kwargs)
+
+    def read(self, *args, **kwargs):
+        self.__cachedValues = dict()
+        return super().read(*args, **kwargs)
+
+    def set(self, section, option, value=None):
+        self.__cachedValues[(section, option)] = value
+        super().set(section, option, value)
+
+    def get(self, section, option, **kwargs):
+        cache, key = self.__cachedValues, (section, option)
+        if key not in cache:
+            cache[key] = super().get(*key, **kwargs)  # pylint: disable=W0142
+        return cache[key]
+
+
+class Settings(CachingConfigParser):
+    def __init__(self, load=True, iniFile=None, *args, **kwargs):
+        # Sigh, ConfigParser.SafeConfigParser is an old-style class, so we
+        # have to call the superclass __init__ explicitly:
+        CachingConfigParser.__init__(self, *args, **kwargs)
+
+        self.initializeWithDefaults()
+        self.__loadAndSave = load
+        self.__iniFileSpecifiedOnCommandLine = iniFile
+        self.__ini_lock = None  # Lock for ini file to prevent concurrent access
+
+        self.migrateConfigurationFiles()
+
+        # Check if this is first run (no INI file exists yet)
+        isFirstRun = load and not self._iniFileExists()
+
+        if load:
+            # First, try to load the settings file from the program directory,
+            # if that fails, load the settings file from the settings directory
+            try:
+                if not self.read(
+                    self.filename(forceProgramDir=True), encoding="utf-8"
+                ):
+                    self.read(self.filename(), encoding="utf-8")
+                errorMessage = ""
+                self._migrateOldSettingNames()
+            except configparser.ParsingError as errorMessage:
+                # Ignore exceptions and simply use default values.
+                # Also record the failure in the settings:
+                self.initializeWithDefaults()
+                self.setLoadStatus(str(errorMessage))
+            # On first run, set up Welcome.tsk in user's Documents folder
+            if isFirstRun:
+                self._setupFirstRunWelcomeFile()
+        else:
+            # Assume that if the settings are not to be loaded, we also
+            # should be quiet (i.e. we are probably in test mode):
+            self.__beQuiet()
+        pub.subscribe(
+            self.onSettingsFileLocationChanged,
+            "settings.file.saveinifileinprogramdir",
+        )
+
+    def acquire_ini_lock(self):
+        """Acquire lock on ini file to prevent multiple instances from
+        corrupting config. Shows error and exits if another instance has lock.
+
+        Note: This must be called after wxApp is created, as it may display
+        a wx.MessageBox on failure."""
+        try:
+            import fasteners
+            lock_path = self.filename() + ".lock"
+            self.__ini_lock = fasteners.InterProcessLock(lock_path)
+            acquired = self.__ini_lock.acquire(blocking=False)
+            if not acquired:
+                # Another instance has the lock
+                wx.MessageBox(
+                    _("Another instance of %s is already running with the same "
+                      "configuration file.\n\n"
+                      "You can run multiple instances with different configuration "
+                      "files using the --ini option:\n"
+                      "  taskcoach --ini=/path/to/other.ini\n\n"
+                      "The program will now exit.") % meta.name,
+                    _("%s: configuration locked") % meta.name,
+                    style=wx.OK | wx.ICON_ERROR,
+                )
+                sys.exit(1)
+        except ImportError:
+            # fasteners not available - skip locking
+            pass
+        except Exception:
+            # Lock failed for other reasons (permissions, etc.) - continue without lock
+            pass
+
+    def release_ini_lock(self):
+        """Release the ini file lock. Call this on application shutdown."""
+        if self.__ini_lock is not None:
+            try:
+                self.__ini_lock.release()
+            except Exception:
+                pass  # Ignore errors during cleanup
+            self.__ini_lock = None
+
+    def onSettingsFileLocationChanged(self, value):
+        saveIniFileInProgramDir = value
+        if not saveIniFileInProgramDir:
+            try:
+                os.remove(self.generatedIniFilename(forceProgramDir=True))
+            except OSError:
+                return  # File might not exist
+
+    def initializeWithDefaults(self):
+        for section in self.sections():
+            self.remove_section(section)
+        for section, settings in list(defaults.defaults.items()):
+            self.add_section(section)
+            for key, value in list(settings.items()):
+                # Don't notify observers while we are initializing
+                super().set(section, key, value)
+
+    def setLoadStatus(self, message):
+        self.set("file", "inifileloaded", "False" if message else "True")
+        self.set("file", "inifileloaderror", message)
+
+    def __beQuiet(self):
+        noisySettings = [
+            ("window", "tips", "False"),
+            ("window", "starticonized", "Always"),
+        ]
+        for section, setting, value in noisySettings:
+            self.set(section, setting, value)
+
+    def add_section(
+        self, section, copyFromSection=None
+    ):  # pylint: disable=W0221
+        result = super().add_section(section)
+        if copyFromSection:
+            for name, value in self.items(copyFromSection):
+                super().set(section, name, value)
+        return result
+
+    def getRawValue(self, section, option):
+        return super().get(section, option)
+
+    def init(self, section, option, value):
+        return super().set(section, option, value)
+
+    def get(self, section, option, **kwargs):
+        try:
+            result = super().get(section, option, **kwargs)
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            return self.getDefault(section, option)
+        result = self._fixValuesFromOldIniFiles(section, option, result)
+        result = self._ensureMinimum(section, option, result)
+        return result
+
+    def getDefault(self, section, option):
+        defaultSectionKey = section.strip("0123456789")
+        try:
+            defaultSection = defaults.defaults[defaultSectionKey]
+        except KeyError:
+            raise configparser.NoSectionError(defaultSectionKey)
+        try:
+            return defaultSection[option]
+        except KeyError:
+            raise configparser.NoOptionError(option, defaultSection)
+
+    def _ensureMinimum(self, section, option, result):
+        # Some settings may have a minimum value, make sure we return at
+        # least that minimum value:
+        if section in defaults.minimum and option in defaults.minimum[section]:
+            result = max(result, defaults.minimum[section][option])
+        return result
+
+    def _migrateOldSettingNames(self):
+        """Migrate old setting names to new names for backward compatibility."""
+        # Mapping of (section, old_name) -> new_name
+        migrations = [
+            ("feature", "sdtcspans", "task_duration_presets"),
+            ("feature", "sdtcspans_effort", "effort_duration_presets"),
+        ]
+        for section, old_name, new_name in migrations:
+            try:
+                if self.has_option(section, old_name):
+                    old_value = super().get(section, old_name)
+                    if not self.has_option(section, new_name):
+                        self.set(section, new_name, old_value)
+                    self.remove_option(section, old_name)
+            except (configparser.NoSectionError, configparser.NoOptionError):
+                pass
+
+    def _fixValuesFromOldIniFiles(self, section, option, result):
+        """Try to fix settings from old TaskCoach.ini files that are no longer
+        valid."""
+        original = result
+        # Starting with release 1.1.0, the date properties of tasks (startDate,
+        # dueDate and completionDate) are datetimes:
+        taskDateColumns = ("startDate", "dueDate", "completionDate")
+        orderingViewers = [
+            "taskviewer",
+            "categoryviewer",
+            "noteviewer",
+            "noteviewerintaskeditor",
+            "noteviewerincategoryeditor",
+            "noteviewerinattachmenteditor",
+            "categoryviewerintaskeditor",
+            "categoryviewerinnoteeditor",
+        ]
+        if option == "sortby":
+            if result in taskDateColumns:
+                result += "Time"
+            try:
+                ast.literal_eval(result)
+            except (ValueError, SyntaxError):
+                sortKeys = [result]
+                try:
+                    ascending = self.getboolean(section, "sortascending")
+                except (ValueError, configparser.NoOptionError, configparser.NoSectionError):
+                    ascending = True
+                result = '["%s%s"]' % (("" if ascending else "-"), result)
+        elif option == "columns":
+            columns = [
+                (col + "Time" if col in taskDateColumns else col)
+                for col in ast.literal_eval(result)
+            ]
+            result = str(columns)
+        elif option == "columnwidths":
+            widths = dict()
+            try:
+                columnWidthMap = ast.literal_eval(result)
+            except (SyntaxError, ValueError):
+                columnWidthMap = dict()
+            for column, width in list(columnWidthMap.items()):
+                if column in taskDateColumns:
+                    column += "Time"
+                widths[column] = width
+            if section in orderingViewers and "ordering" not in widths:
+                widths["ordering"] = 28
+            result = str(widths)
+        elif (
+            section == "feature"
+            and option == "notifier"
+            and result == "Native"
+        ):
+            result = "Task Coach"
+        elif section == "editor" and option == "preferencespages":
+            # Migrate legacy page names saved in .ini files from older versions.
+            # Each step must be kept so upgrades from any prior version work.
+            result = result.replace("colors", "appearance")  # pre-1.x "colors" tab
+            result = result.replace("appearance", "statuses")  # renamed to "Statuses" tab
+        elif section in orderingViewers and option == "columnsalwaysvisible":
+            # XXX: remove 'ordering' from always visible columns. This wasn't in any official release
+            # but I need it so that people can test without resetting their .ini file...
+            # Remove this after the 1.3.38 release.
+            try:
+                columns = ast.literal_eval(result)
+            except (SyntaxError, ValueError):
+                columns = ["ordering"]
+            else:
+                if "ordering" in columns:
+                    columns.remove("ordering")
+            result = str(columns)
+        if section in ("icon", "icon_dark"):
+            from taskcoachlib.gui.icons.icon_library import icon_catalog
+            result = icon_catalog.normalize_icon_id(result)
+        if result != original:
+            super().set(section, option, result)
+        return result
+
+    def set(self, section, option, value, new=False):  # pylint: disable=W0221
+        if new:
+            currentValue = (
+                "a new option, so use something as current value"
+                " that is unlikely to be equal to the new value"
+            )
+        else:
+            currentValue = self.get(section, option)
+        if value != currentValue:
+            super().set(section, option, value)
+            patterns.Event("%s.%s" % (section, option), self, value).send()
+            from taskcoachlib.config import settings2
+            settings2.schedule_refresh()
+            return True
+        else:
+            return False
+
+    def setboolean(self, section, option, value):
+        if self.set(section, option, str(value)):
+            pub.sendMessage("settings.%s.%s" % (section, option), value=value)
+
+    setvalue = settuple = setlist = setdict = setint = setboolean
+
+    def settext(self, section, option, value):
+        if self.set(section, option, value):
+            pub.sendMessage("settings.%s.%s" % (section, option), value=value)
+
+    def getlist(self, section, option):
+        return self.getEvaluatedValue(section, option, ast.literal_eval)
+
+    getvalue = gettuple = getdict = getlist
+
+    def getint(self, section, option):
+        return self.getEvaluatedValue(section, option, int)
+
+    def getboolean(self, section, option):
+        return self.getEvaluatedValue(section, option, self.evalBoolean)
+
+    def gettext(self, section, option):
+        return self.get(section, option)
+
+    @staticmethod
+    def evalBoolean(stringValue):
+        if stringValue in ("True", "False"):
+            return "True" == stringValue
+        else:
+            raise ValueError(
+                "invalid literal for Boolean value: '%s'" % stringValue
+            )
+
+    def getEvaluatedValue(
+        self, section, option, evaluate=ast.literal_eval, showerror=wx.MessageBox
+    ):
+        stringValue = self.get(section, option)
+        try:
+            return evaluate(stringValue)
+        except Exception as exceptionMessage:  # pylint: disable=W0703
+            message = "\n".join(
+                [
+                    _("Error while reading the %s-%s setting from %s.ini.")
+                    % (section, option, meta.filename),
+                    _("The value is: %s") % stringValue,
+                    _("The error is: %s") % exceptionMessage,
+                    _(
+                        "%s will use the default value for the setting and should proceed normally."
+                    )
+                    % meta.name,
+                ]
+            )
+            showerror(
+                message, caption=_("Settings error"), style=wx.ICON_ERROR
+            )
+            defaultValue = self.getDefault(section, option)
+            self.set(
+                section, option, defaultValue, new=True
+            )  # Ignore current value
+            return evaluate(defaultValue)
+
+    def _create_legacy_writer(self):
+        """Create a ConfigParser copy with status icons converted to old names.
+
+        Returns a new ConfigParser with legacy icon names substituted,
+        or None if legacy mode is off. Original self is never modified.
+        """
+        try:
+            legacy = self.getboolean("icon", "legacystatusicons")
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return None
+        if not legacy:
+            return None
+        tmp = configparser.ConfigParser(interpolation=None)
+        for section in self.sections():
+            tmp.add_section(section)
+            for key, val in super().items(section):
+                tmp.set(section, key, val)
+        for section in ("icon", "icon_dark"):
+            for key in _LEGACY_STATUS_KEYS:
+                try:
+                    current = tmp.get(section, key)
+                except (configparser.NoSectionError,
+                        configparser.NoOptionError):
+                    continue
+                old_name = _LEGACY_REVERSE_MAP.get(current)
+                if old_name:
+                    log_step(
+                        f"Legacy save: converting '{current}' -> "
+                        f"'{old_name}' ({section}.{key})",
+                        prefix="ICON",
+                    )
+                    tmp.set(section, key, old_name)
+                else:
+                    log_step(
+                        f"Legacy save: WARNING: '{current}' has no legacy "
+                        f"equivalent for {section}.{key}, writing as-is",
+                        prefix="ICON",
+                    )
+        return tmp
+
+    def save(
+        self, showerror=wx.MessageBox, file=open
+    ):  # pylint: disable=W0622
+        self.set("version", "python", sys.version)
+        self.set(
+            "version",
+            "wxpython",
+            "%s-%s @ %s"
+            % (wx.VERSION_STRING, wx.PlatformInfo[2], wx.PlatformInfo[1]),
+        )
+        self.set("version", "pythonfrozen", str(hasattr(sys, "frozen")))
+        self.set("version", "current", meta.data.version)
+        if not self.__loadAndSave:
+            return
+        try:
+            path = self.path()
+            if not os.path.exists(path):
+                os.makedirs(path, exist_ok=True)
+            writer = self._create_legacy_writer() or self
+            tmpFile = file(self.filename() + ".tmp", "w", encoding="utf-8")
+            writer.write(tmpFile)
+            tmpFile.close()
+            if os.path.exists(self.filename()):
+                os.remove(self.filename())
+            os.rename(self.filename() + ".tmp", self.filename())
+        except Exception as message:  # pylint: disable=W0703
+            showerror(
+                _("Error while saving %s.ini:\n%s\n")
+                % (meta.filename, message),
+                caption=_("Save error"),
+                style=wx.ICON_ERROR,
+            )
+
+    def filename(self, forceProgramDir=False):
+        if self.__iniFileSpecifiedOnCommandLine:
+            return self.__iniFileSpecifiedOnCommandLine
+        else:
+            return self.generatedIniFilename(forceProgramDir)
+
+    def path(
+        self, forceProgramDir=False, environ=os.environ
+    ):  # pylint: disable=W0102
+        if self.__iniFileSpecifiedOnCommandLine:
+            return self.pathToIniFileSpecifiedOnCommandLine()
+        elif forceProgramDir or self.getboolean(
+            "file", "saveinifileinprogramdir"
+        ):
+            return self.pathToProgramDir()
+        else:
+            return self.pathToConfigDir(environ)
+
+    @staticmethod
+    def pathToDocumentsDir():
+        if operating_system.isWindows():
+            from win32com.shell import shell, shellcon
+
+            try:
+                return shell.SHGetSpecialFolderPath(
+                    None, shellcon.CSIDL_PERSONAL
+                )
+            except Exception:
+                # Yes, one of the documented ways to get this sometimes fail with "Unspecified error". Not sure
+                # this will work either.
+                # Update: There are cases when it doesn't work either; see support request #410...
+                try:
+                    return shell.SHGetFolderPath(
+                        None, shellcon.CSIDL_PERSONAL, None, 0
+                    )  # SHGFP_TYPE_CURRENT not in shellcon
+                except Exception:
+                    return os.getcwd()  # Last resort fallback
+        elif operating_system.isMac():
+            return os.path.expanduser("~/Documents")
+        elif operating_system.isGTK():
+            try:
+                from PyKDE4.kdeui import KGlobalSettings
+            except ImportError:
+                pass
+            else:
+                return str(KGlobalSettings.documentPath())
+            # Check XDG_DOCUMENTS_DIR (standard on Linux)
+            xdg_docs = os.environ.get("XDG_DOCUMENTS_DIR")
+            if xdg_docs and os.path.isdir(xdg_docs):
+                return xdg_docs
+            # Fall back to ~/Documents if it exists
+            docs_dir = os.path.join(os.path.expanduser("~"), "Documents")
+            if os.path.isdir(docs_dir):
+                return docs_dir
+        # Assuming Unix-like, fall back to home
+        return os.path.expanduser("~")
+
+    def _iniFileExists(self):
+        """Check if INI file exists in either program dir or config dir."""
+        return (
+            os.path.exists(self.filename(forceProgramDir=True))
+            or os.path.exists(self.filename())
+        )
+
+    @staticmethod
+    def pathToSystemWelcomeFile():
+        """Find the system-installed Welcome.tsk file."""
+        # Check platform-specific locations
+        if operating_system.isWindows():
+            # Windows: look in install directory
+            candidates = [
+                os.path.join(os.path.dirname(sys.executable), "Welcome.tsk"),
+                os.path.join(os.path.dirname(sys.argv[0]), "Welcome.tsk"),
+            ]
+        elif operating_system.isMac():
+            # macOS: look in app bundle Resources
+            candidates = [
+                os.path.join(
+                    os.path.dirname(sys.executable),
+                    "..", "Resources", "Welcome.tsk"
+                ),
+                os.path.join(os.path.dirname(sys.argv[0]), "Welcome.tsk"),
+            ]
+        else:
+            # Linux: check standard system locations
+            candidates = [
+                "/usr/share/taskcoach/Welcome.tsk",
+                "/usr/local/share/taskcoach/Welcome.tsk",
+                "/usr/share/doc/taskcoach/Welcome.tsk",
+                os.path.join(os.path.dirname(sys.argv[0]), "Welcome.tsk"),
+            ]
+        for path in candidates:
+            if os.path.exists(path):
+                return path
+        return None
+
+    def _setupFirstRunWelcomeFile(self):
+        """On first run, copy Welcome.tsk to user's Documents folder."""
+        systemWelcome = self.pathToSystemWelcomeFile()
+        if not systemWelcome:
+            return  # No system Welcome.tsk found
+
+        # Create TaskCoach folder in user's Documents
+        docsDir = self.pathToDocumentsDir()
+        taskcoachDocsDir = os.path.join(docsDir, meta.filename)
+        userWelcome = os.path.join(taskcoachDocsDir, "Welcome.tsk")
+
+        # Don't overwrite if user already has a Welcome.tsk
+        if os.path.exists(userWelcome):
+            # But still set it as the file to open on first run
+            self.set("file", "lastfile", userWelcome)
+            return
+
+        try:
+            if not os.path.exists(taskcoachDocsDir):
+                os.makedirs(taskcoachDocsDir)
+            shutil.copy(systemWelcome, userWelcome)
+            # Set this as the last opened file so it opens on startup
+            self.set("file", "lastfile", userWelcome)
+        except OSError:
+            pass  # Silently fail if we can't copy
+
+    def pathToProgramDir(self):
+        path = os.path.abspath(sys.argv[0])
+        if not os.path.isdir(path):
+            path = os.path.dirname(path)
+        return path
+
+    def pathToConfigDir(self, environ):
+        try:
+            if operating_system.isGTK():
+                from xdg import BaseDirectory
+
+                path = BaseDirectory.save_config_path(meta.name)
+            elif operating_system.isMac():
+                path = os.path.expanduser("~/Library/Preferences")
+            elif operating_system.isWindows():
+                from win32com.shell import shell, shellcon
+
+                path = os.path.join(
+                    shell.SHGetSpecialFolderPath(
+                        None, shellcon.CSIDL_APPDATA, True
+                    ),
+                    meta.name,
+                )
+            else:
+                path = self.pathToConfigDir_deprecated(environ=environ)
+        except Exception:  # Fallback to old dir
+            path = self.pathToConfigDir_deprecated(environ=environ)
+        return path
+
+    def _pathToDataDir(self, *args, **kwargs):
+        forceGlobal = kwargs.pop("forceGlobal", False)
+        if operating_system.isGTK():
+            from xdg import BaseDirectory
+
+            path = BaseDirectory.save_data_path(meta.name)
+        elif operating_system.isMac():
+            path = os.path.join(
+                os.path.expanduser("~/Library/Application Support"),
+                meta.name
+            )
+        elif operating_system.isWindows():
+            if self.__iniFileSpecifiedOnCommandLine and not forceGlobal:
+                path = self.pathToIniFileSpecifiedOnCommandLine()
+            else:
+                from win32com.shell import shell, shellcon
+
+                path = os.path.join(
+                    shell.SHGetSpecialFolderPath(
+                        None, shellcon.CSIDL_APPDATA, True
+                    ),
+                    meta.name,
+                )
+
+        else:  # Errr...
+            path = self.path()
+
+        if operating_system.isWindows():
+            # Follow shortcuts.
+            from win32com.client import Dispatch
+
+            shell = Dispatch("WScript.Shell")
+            for component in args:
+                path = os.path.join(path, component)
+                if os.path.exists(path + ".lnk"):
+                    shortcut = shell.CreateShortcut(path + ".lnk")
+                    path = shortcut.TargetPath
+        else:
+            path = os.path.join(path, *args)
+
+        exists = os.path.exists(path)
+        if not exists:
+            os.makedirs(path)
+        return path, exists
+
+    def pathToDataDir(self, *args, **kwargs):
+        return self._pathToDataDir(*args, **kwargs)[0]
+
+    def _pathToTemplatesDir(self):
+        try:
+            return self._pathToDataDir("templates")
+        except OSError:
+            pass  # Fallback on old path
+        return self.pathToTemplatesDir_deprecated(), True
+
+    def pathToTemplatesDir(self):
+        return self._pathToTemplatesDir()[0]
+
+    def pathToBackupsDir(self):
+        return self._pathToDataDir("backups")[0]
+
+    def pathToConfigDir_deprecated(self, environ):
+        try:
+            path = os.path.join(environ["APPDATA"], meta.filename)
+        except Exception:
+            path = os.path.expanduser("~")  # pylint: disable=W0702
+            if path == "~":
+                # path not expanded: apparently, there is no home dir
+                path = os.getcwd()
+            path = os.path.join(path, ".%s" % meta.filename)
+        return operating_system.decodeSystemString(path)
+
+    def pathToTemplatesDir_deprecated(self, doCreate=True):
+        path = os.path.join(self.path(), "taskcoach-templates")
+
+        if operating_system.isWindows():
+            # Under Windows, check for a shortcut and follow it if it
+            # exists.
+
+            if os.path.exists(path + ".lnk"):
+                from win32com.client import Dispatch  # pylint: disable=F0401
+
+                shell = Dispatch("WScript.Shell")
+                shortcut = shell.CreateShortcut(path + ".lnk")
+                return shortcut.TargetPath
+
+        if doCreate:
+            try:
+                os.makedirs(path)
+            except OSError:
+                pass
+        return operating_system.decodeSystemString(path)
+
+    def pathToIniFileSpecifiedOnCommandLine(self):
+        return os.path.dirname(self.__iniFileSpecifiedOnCommandLine) or "."
+
+    def generatedIniFilename(self, forceProgramDir):
+        return os.path.join(
+            self.path(forceProgramDir), "%s.ini" % meta.filename
+        )
+
+    def migrateConfigurationFiles(self):
+        # Templates. Extra care for Windows shortcut.
+        oldPath = self.pathToTemplatesDir_deprecated(doCreate=False)
+        newPath, exists = self._pathToTemplatesDir()
+        if self.__iniFileSpecifiedOnCommandLine:
+            globalPath = os.path.join(
+                self.pathToDataDir(forceGlobal=True), "templates"
+            )
+            if os.path.exists(globalPath) and not os.path.exists(oldPath):
+                # Upgrade from fresh installation of 1.3.24 Portable
+                oldPath = globalPath
+                if exists and not os.path.exists(newPath + "-old"):
+                    # WTF?
+                    os.rename(newPath, newPath + "-old")
+                exists = False
+        if exists:
+            return
+        if oldPath != newPath:
+            if operating_system.isWindows() and os.path.exists(
+                oldPath + ".lnk"
+            ):
+                shutil.move(oldPath + ".lnk", newPath + ".lnk")
+            elif os.path.exists(oldPath):
+                # pathToTemplatesDir() has created the directory
+                try:
+                    os.rmdir(newPath)
+                except OSError:
+                    pass
+                shutil.move(oldPath, newPath)
+        # Ini file
+        oldPath = os.path.join(
+            self.pathToConfigDir_deprecated(environ=os.environ),
+            "%s.ini" % meta.filename,
+        )
+        newPath = os.path.join(
+            self.pathToConfigDir(environ=os.environ), "%s.ini" % meta.filename
+        )
+        if newPath != oldPath and os.path.exists(oldPath):
+            shutil.move(oldPath, newPath)
+        # Cleanup
+        try:
+            os.rmdir(self.pathToConfigDir_deprecated(environ=os.environ))
+        except OSError:
+            pass
+
+    def __hash__(self) -> int:
+        return id(self)

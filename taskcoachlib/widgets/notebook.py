@@ -1,0 +1,335 @@
+"""
+Task Coach - Your friendly task manager
+Copyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>
+
+Task Coach is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Task Coach is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import wx
+import wx.lib.agw.aui as aui
+import wx.lib.scrolledpanel as scrolledpanel
+from taskcoachlib.gui.icons.icon_library import icon_catalog, LIST_ICON_SIZE
+
+
+class GridCursor:
+    """Utility class to help when adding controls to a GridBagSizer."""
+
+    def __init__(self, columns):
+        self.__columns = columns
+        self.__nextPosition = (0, 0)
+
+    def __updatePosition(self, colspan):
+        """Update the position of the cursor, taking colspan into account."""
+        row, column = self.__nextPosition
+        if column == self.__columns - colspan:
+            row += 1
+            column = 0
+        else:
+            column += colspan
+        self.__nextPosition = (row, column)
+
+    def next(self, colspan=1):
+        row, column = self.__nextPosition
+        self.__updatePosition(colspan)
+        return row, column
+
+    def maxRow(self):
+        row, column = self.__nextPosition
+        return max(0, row - 1) if column == 0 else row
+
+
+class BookPage(wx.Panel):
+    """A page in a notebook."""
+
+    # Outer margin around page content (modern UI best practice: 10-12px)
+    _outerMargin = 10
+    # Grid spacing - subclasses can override
+    _vgap = 0
+    _hgap = 5
+    _borderWidth = 5
+
+    def __init__(self, parent, columns, growableColumn=None, *args, **kwargs):
+        super().__init__(parent, style=wx.TAB_TRAVERSAL, *args, **kwargs)
+        self._sizer = wx.GridBagSizer(vgap=self._vgap, hgap=self._hgap)
+        self._columns = columns
+        self._position = GridCursor(columns)
+        if growableColumn is None:
+            self._growableColumn = columns - 1
+        else:
+            self._growableColumn = growableColumn
+
+    def fit(self):
+        # Wrap GridBagSizer in outer BoxSizer with margins for proper spacing
+        # Only create the outer sizer once - calling fit() multiple times is safe
+        if not hasattr(self, '_outerSizer') or self._outerSizer is None:
+            self._outerSizer = wx.BoxSizer(wx.VERTICAL)
+            self._outerSizer.Add(self._sizer, 1, wx.EXPAND | wx.ALL, self._outerMargin)
+            self.SetSizer(self._outerSizer)
+        self.Layout()  # Force layout recalculation (needed on Windows for lazy-loaded pages)
+
+    def __defaultFlags(self, controls):
+        """Return the default flags for placing a list of controls."""
+        flags = []
+        for columnIndex in range(len(controls)):
+            flag = wx.ALL | wx.ALIGN_TOP | wx.ALIGN_LEFT
+            flags.append(flag)
+        return flags
+
+    def __determineFlags(self, controls, flagsPassed):
+        """Return a merged list of flags by overriding the default
+        flags with flags passed by the caller."""
+        flagsPassed = flagsPassed or [None] * len(controls)
+        defaultFlags = self.__defaultFlags(controls)
+        return [
+            defaultFlag if flagPassed is None else flagPassed
+            for flagPassed, defaultFlag in zip(flagsPassed, defaultFlags)
+        ]
+
+    def addEntry(self, *controls, **kwargs):
+        """Add a number of controls to the page. All controls are
+        placed on one row, and together they form one entry. E.g. a
+        label, a text field and an explanatory label. The default
+        flags for placing the controls can be overridden by
+        providing a keyword parameter 'flags'. flags should be a
+        list of flags (wx.ALIGN_LEFT and the like). The list may
+        contain None for controls that should be placed using the default
+        flag. If the flags list is shorter than the number of
+        controls it is extended with as much 'None's as needed.
+        So, addEntry(aLabel, aTextCtrl, flags=[None, wx.ALIGN_LEFT])
+        will place the label with the default flag and will place the
+        textCtrl left aligned."""
+        flags = self.__determineFlags(controls, kwargs.get("flags", None))
+        controls = [
+            self.__createStaticTextControlIfNeeded(control)
+            for control in controls
+            if control is not None
+        ]
+        lastColumnIndex = len(controls) - 1
+        for columnIndex, control in enumerate(controls):
+            self.__addControl(
+                columnIndex,
+                control,
+                flags[columnIndex],
+                lastColumn=columnIndex == lastColumnIndex,
+            )
+            if columnIndex > 0:
+                control.MoveAfterInTabOrder(controls[columnIndex - 1])
+        if kwargs.get("growable", False):
+            self._sizer.AddGrowableRow(self._position.maxRow())
+        # Move growable column definition here
+        # There are asserts to fail if the column is already
+        # marked growable or if there is no column yet created
+        if (
+            self._growableColumn > -1
+            and self._growableColumn >= lastColumnIndex
+        ):
+            self._sizer.AddGrowableCol(self._growableColumn)
+            self._growableColumn = -1
+
+    def addLine(self):
+        line = wx.StaticLine(self)
+        colspan = max(self._columns, 1)
+        self._sizer.Add(
+            line,
+            self._position.next(colspan),
+            span=(1, colspan),
+            flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.TOP | wx.BOTTOM,
+            border=5,
+        )
+
+    def __addControl(self, columnIndex, control, flag, lastColumn):
+        colspan = max(self._columns - columnIndex, 1) if lastColumn else 1
+        self._sizer.Add(
+            control,
+            self._position.next(colspan),
+            span=(1, colspan),
+            flag=flag,
+            border=self._borderWidth,
+        )
+
+    def __createStaticTextControlIfNeeded(self, control):
+        if type(control) in [type(""), type("")]:
+            control = wx.StaticText(self, label=control)
+        return control
+
+
+class ScrolledBookPage(scrolledpanel.ScrolledPanel):
+    """A scrollable page in a notebook. Use for pages with lots of content."""
+
+    # Outer margin around page content
+    _outerMargin = 10
+    # Grid spacing - subclasses can override
+    _vgap = 0
+    _hgap = 5
+    _borderWidth = 5
+
+    def __init__(self, parent, columns, growableColumn=None, *args, **kwargs):
+        super().__init__(parent, style=wx.TAB_TRAVERSAL, *args, **kwargs)
+        self._sizer = wx.GridBagSizer(vgap=self._vgap, hgap=self._hgap)
+        self._columns = columns
+        self._position = GridCursor(columns)
+        if growableColumn is None:
+            self._growableColumn = columns - 1
+        else:
+            self._growableColumn = growableColumn
+
+    def fit(self):
+        # Wrap GridBagSizer in outer BoxSizer with margins for proper spacing
+        if not hasattr(self, '_outerSizer') or self._outerSizer is None:
+            self._outerSizer = wx.BoxSizer(wx.VERTICAL)
+            self._outerSizer.Add(self._sizer, 1, wx.EXPAND | wx.ALL, self._outerMargin)
+            self.SetSizer(self._outerSizer)
+        self.SetupScrolling(scroll_x=True, scroll_y=True)
+        self.Layout()
+
+    def __defaultFlags(self, controls):
+        """Return the default flags for placing a list of controls."""
+        flags = []
+        for columnIndex in range(len(controls)):
+            flag = wx.ALL | wx.ALIGN_TOP | wx.ALIGN_LEFT
+            flags.append(flag)
+        return flags
+
+    def __determineFlags(self, controls, flagsPassed):
+        """Return a merged list of flags by overriding the default
+        flags with flags passed by the caller."""
+        flagsPassed = flagsPassed or [None] * len(controls)
+        defaultFlags = self.__defaultFlags(controls)
+        return [
+            defaultFlag if flagPassed is None else flagPassed
+            for flagPassed, defaultFlag in zip(flagsPassed, defaultFlags)
+        ]
+
+    def addEntry(self, *controls, **kwargs):
+        """Add controls to the page on one row."""
+        flags = self.__determineFlags(controls, kwargs.get("flags", None))
+        controls = [
+            self._ScrolledBookPage__createStaticTextControlIfNeeded(control)
+            for control in controls
+            if control is not None
+        ]
+        lastColumnIndex = len(controls) - 1
+        for columnIndex, control in enumerate(controls):
+            self._ScrolledBookPage__addControl(
+                columnIndex, control, flags[columnIndex],
+                columnIndex == lastColumnIndex
+            )
+        if kwargs.get("growable", False):
+            self._sizer.AddGrowableRow(self._position.maxRow())
+        # Add growable column once, when first entry has been added
+        if (
+            self._growableColumn >= 0
+            and self._sizer.GetItemCount() >= self._columns
+        ):
+            self._sizer.AddGrowableCol(self._growableColumn)
+            self._growableColumn = -1
+
+    def addLine(self):
+        line = wx.StaticLine(self)
+        colspan = max(self._columns, 1)
+        self._sizer.Add(
+            line,
+            self._position.next(colspan),
+            span=(1, colspan),
+            flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.TOP | wx.BOTTOM,
+            border=5,
+        )
+
+    def __addControl(self, columnIndex, control, flag, lastColumn):
+        colspan = max(self._columns - columnIndex, 1) if lastColumn else 1
+        self._sizer.Add(
+            control,
+            self._position.next(colspan),
+            span=(1, colspan),
+            flag=flag,
+            border=self._borderWidth,
+        )
+
+    def __createStaticTextControlIfNeeded(self, control):
+        if type(control) in [type(""), type("")]:
+            control = wx.StaticText(self, label=control)
+        return control
+
+
+class BookMixin(object):
+    """Mixin class for *book"""
+
+    _bitmapSize = (LIST_ICON_SIZE, LIST_ICON_SIZE)
+    pageChangedEvent = "Subclass responsibility"
+
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, -1, *args, **kwargs)
+        self.Bind(self.pageChangedEvent, self.onPageChanged)
+
+    def __getitem__(self, index):
+        """More pythonic way to get a specific page, also useful for iterating
+        over all pages, e.g: for page in notebook: ..."""
+        if index < self.GetPageCount():
+            return self.GetPage(index)
+        else:
+            raise IndexError
+
+    def onPageChanged(self, event):
+        """Can be overridden in a subclass to do something useful."""
+        event.Skip()
+
+    def AddPage(self, page, name, icon_id=None):
+        """Override AddPage to allow for simply specifying the icon_id."""
+        bitmap = icon_catalog.get_bitmap(icon_id, self._bitmapSize[0])
+        super().AddPage(page, name, bitmap=bitmap)
+
+    def ok(self, *args, **kwargs):
+        for page in self:
+            page.ok(*args, **kwargs)
+
+
+class Notebook(BookMixin, aui.AuiNotebook):
+    pageChangedEvent = aui.EVT_AUINOTEBOOK_PAGE_CHANGED
+
+    def __init__(self, *args, **kwargs):
+        defaultStyle = kwargs.get("agwStyle", aui.AUI_NB_DEFAULT_STYLE)
+        kwargs["agwStyle"] = (
+            defaultStyle
+            & ~aui.AUI_NB_CLOSE_ON_ACTIVE_TAB
+            & ~aui.AUI_NB_MIDDLE_CLICK_CLOSE
+        )
+        super().__init__(*args, **kwargs)
+        # Bind mouse wheel directly on the tab control for tab scrolling
+        tabCtrl = self.GetActiveTabCtrl()
+        if tabCtrl:
+            tabCtrl.Bind(wx.EVT_MOUSEWHEEL, self.__onTabMouseWheel)
+        # Disable focus on internal AUI TabFrame to prevent "lost" tab keypress
+        self.__disableTabFrameFocus()
+
+    def __disableTabFrameFocus(self):
+        """Disable focus on internal AUI TabFrame windows."""
+        for child in self.GetChildren():
+            if child.__class__.__name__ == 'TabFrame':
+                child.SetCanFocus(False)
+
+    def __onTabMouseWheel(self, event):
+        """Handle mouse wheel scrolling on the tab bar to switch tabs."""
+        rotation = event.GetWheelRotation()
+        if rotation > 0:
+            self.AdvanceSelection(False)  # Previous tab
+        elif rotation < 0:
+            self.AdvanceSelection(True)  # Next tab
+
+    def AdvanceSelectionForward(self):
+        """Move to the next tab (wraps around)."""
+        self.AdvanceSelection(True)
+
+    def AdvanceSelectionBackward(self):
+        """Move to the previous tab (wraps around)."""
+        self.AdvanceSelection(False)
