@@ -6729,23 +6729,23 @@ msgstr "所有文件(*.*)|*"
 
 #: taskcoachlib/widgets/hcalendarconfig.py:48
 msgid "Headers"
-msgstr ""
+msgstr "标题"
 
 #: taskcoachlib/widgets/hcalendarconfig.py:53
 msgid "Week number"
-msgstr ""
+msgstr "周数"
 
 #: taskcoachlib/widgets/hcalendarconfig.py:63
 msgid "Calendar span"
-msgstr ""
+msgstr "日历跨度"
 
 #: taskcoachlib/widgets/hcalendarconfig.py:65
 msgid "Week"
-msgstr ""
+msgstr "周"
 
 #: taskcoachlib/widgets/hcalendarconfig.py:65
 msgid "Work week"
-msgstr ""
+msgstr "工作周"
 
 #: taskcoachlib/widgets/password.py:32
 msgid "Password:"
@@ -6753,7 +6753,7 @@ msgstr "密码："
 
 #: taskcoachlib/widgets/password.py:42
 msgid "Store in keychain"
-msgstr ""
+msgstr "存储到钥匙串"
 
 #: taskcoachlib/widgets/password.py:88
 msgid ""
@@ -6764,6 +6764,11 @@ msgid ""
 "\n"
 "%s"
 msgstr ""
+"尝试查找系统钥匙串时出现问题。\n"
+"请提交错误报告（参见帮助菜单）并附上此消息的截图。\n"
+"错误为：\n"
+"\n"
+"%s"
 
 #: taskcoachlib/widgets/password.py:93
 msgid "Please enter your password."
@@ -6779,39 +6784,39 @@ msgstr "区分大小写(&M)"
 
 #: taskcoachlib/widgets/searchctrl.py:60
 msgid "Match case when filtering"
-msgstr ""
+msgstr "过滤时区分大小写"
 
 #: taskcoachlib/widgets/searchctrl.py:63
 msgid "&Include sub items"
-msgstr ""
+msgstr "包含子项(&I)"
 
 #: taskcoachlib/widgets/searchctrl.py:64
 msgid "Include sub items of matching items in the search results"
-msgstr ""
+msgstr "在搜索结果中包含匹配项的子项"
 
 #: taskcoachlib/widgets/searchctrl.py:67
 msgid "&Search description too"
-msgstr ""
+msgstr "同时搜索描述(&S)"
 
 #: taskcoachlib/widgets/searchctrl.py:68
 msgid "Search both subject and description"
-msgstr ""
+msgstr "同时搜索主题和描述"
 
 #: taskcoachlib/widgets/searchctrl.py:71
 msgid "&Regular Expression"
-msgstr ""
+msgstr "正则表达式(&R)"
 
 #: taskcoachlib/widgets/searchctrl.py:72
 msgid "Consider search text as a regular expression"
-msgstr ""
+msgstr "将搜索文本视为正则表达式"
 
 #: taskcoachlib/widgets/searchctrl.py:141
 msgid "This is an invalid regular expression."
-msgstr ""
+msgstr "这是一个无效的正则表达式。"
 
 #: taskcoachlib/widgets/searchctrl.py:142
 msgid "Defaulting to substring search."
-msgstr ""
+msgstr "默认使用子字符串搜索。"
 
 #: taskcoachlib/widgets/searchctrl.py:207
 msgid "Recent searches"
