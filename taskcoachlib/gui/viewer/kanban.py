@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Kanban viewer for TaskCoach with drag and drop support.
+Kanban viewer for TaskCoach with drag and drop, swimlane and filter support.
 """
 
 import wx
@@ -31,9 +31,10 @@ from . import base
 class KanbanDropTarget(wx.DropTarget):
     """看板拖放目标。"""
     
-    def __init__(self, column, on_drop_callback):
+    def __init__(self, column, swimlane, on_drop_callback):
         super().__init__()
         self._column = column
+        self._swimlane = swimlane
         self._on_drop_callback = on_drop_callback
         self._data_object = wx.TextDataObject()
         self.SetDataObject(self._data_object)
@@ -51,17 +52,18 @@ class KanbanDropTarget(wx.DropTarget):
         if self.GetData():
             task_id = self._data_object.GetText()
             if self._on_drop_callback:
-                self._on_drop_callback(task_id, self._column)
+                self._on_drop_callback(task_id, self._column, self._swimlane)
         return defResult
 
 
 class KanbanCard(wx.Panel):
     """看板卡片组件，支持拖拽。"""
     
-    def __init__(self, parent, task, column, settings, **kwargs):
+    def __init__(self, parent, task, column, swimlane, settings, **kwargs):
         super().__init__(parent, **kwargs)
         self._task = task
         self._column = column
+        self._swimlane = swimlane
         self._settings = settings
         self._selected = False
         self._dragging = False
@@ -97,13 +99,16 @@ class KanbanCard(wx.Panel):
     def _update_priority_color(self):
         """更新优先级颜色指示。"""
         if self._task:
-            priority = self._task.priority()
-            if priority >= 100:
-                color = wx.Colour(255, 0, 0)
-            elif priority >= 50:
-                color = wx.Colour(255, 165, 0)
-            else:
-                color = wx.Colour(0, 128, 0)
+            try:
+                priority = self._task.priority()
+                if priority >= 100:
+                    color = wx.Colour(255, 0, 0)
+                elif priority >= 50:
+                    color = wx.Colour(255, 165, 0)
+                else:
+                    color = wx.Colour(0, 128, 0)
+            except:
+                color = wx.Colour(200, 200, 200)
         else:
             color = wx.Colour(200, 200, 200)
         self._priority_indicator.SetBackgroundColour(color)
@@ -206,7 +211,10 @@ class KanbanCard(wx.Panel):
     def _set_priority(self, priority):
         """设置优先级。"""
         if self._task:
-            self._task.setPriority(priority)
+            try:
+                self._task.setPriority(priority)
+            except:
+                pass
             self._update_priority_color()
             self.Refresh()
     
@@ -220,20 +228,43 @@ class KanbanCard(wx.Panel):
         self.Refresh()
 
 
-class KanbanColumn(wx.Panel):
-    """看板列组件，支持拖放。"""
+class KanbanSwimlaneHeader(wx.Panel):
+    """泳道头部组件。"""
     
-    def __init__(self, parent, column, board, task_list, settings, on_card_moved=None, **kwargs):
+    def __init__(self, parent, swimlane, **kwargs):
+        super().__init__(parent, **kwargs)
+        self._swimlane = swimlane
+        self._init_ui()
+    
+    def _init_ui(self):
+        """初始化UI。"""
+        self.SetBackgroundColour(wx.Colour(200, 200, 200))
+        self.SetMinSize((-1, 30))
+        
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        label = wx.StaticText(self, label=self._swimlane.subject() if self._swimlane else _("No swimlane"))
+        label.SetFont(wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_ITALIC, wx.FONTWEIGHT_NORMAL))
+        sizer.Add(label, 1, wx.ALL, 5)
+        
+        self.SetSizer(sizer)
+
+
+class KanbanColumn(wx.Panel):
+    """看板列组件，支持拖放和泳道。"""
+    
+    def __init__(self, parent, column, board, task_list, settings, swimlanes=None, on_card_moved=None, **kwargs):
         super().__init__(parent, **kwargs)
         self._column = column
         self._board = board
         self._task_list = task_list
         self._settings = settings
+        self._swimlanes = swimlanes or []
         self._on_card_moved = on_card_moved
         self._cards = []
+        self._swimlane_panels = {}
         self._init_ui()
         self._bind_events()
-        self._setup_drop_target()
     
     def _init_ui(self):
         """初始化UI。"""
@@ -275,6 +306,31 @@ class KanbanColumn(wx.Panel):
         main_sizer.Add(add_button, 0, wx.ALL | wx.EXPAND, 5)
         
         self.SetSizer(main_sizer)
+        
+        self._setup_swimlanes()
+    
+    def _setup_swimlanes(self):
+        """设置泳道。"""
+        if self._swimlanes:
+            for swimlane in self._swimlanes:
+                header = KanbanSwimlaneHeader(self._cards_panel, swimlane)
+                self._cards_sizer.Add(header, 0, wx.EXPAND | wx.ALL, 2)
+                
+                swimlane_panel = wx.Panel(self._cards_panel)
+                swimlane_panel.SetBackgroundColour(wx.Colour(245, 245, 245))
+                swimlane_sizer = wx.BoxSizer(wx.VERTICAL)
+                swimlane_panel.SetSizer(swimlane_sizer)
+                
+                self._swimlane_panels[swimlane.id()] = {
+                    'panel': swimlane_panel,
+                    'sizer': swimlane_sizer,
+                    'cards': []
+                }
+                self._cards_sizer.Add(swimlane_panel, 0, wx.EXPAND | wx.ALL, 2)
+                
+                self._setup_drop_target(swimlane_panel, swimlane)
+        else:
+            self._setup_drop_target(self._cards_panel, None)
     
     def _get_header_color(self):
         """获取头部颜色。"""
@@ -290,28 +346,38 @@ class KanbanColumn(wx.Panel):
         """绑定事件。"""
         pass
     
-    def _setup_drop_target(self):
+    def _setup_drop_target(self, panel, swimlane):
         """设置拖放目标。"""
-        self._drop_target = KanbanDropTarget(
+        drop_target = KanbanDropTarget(
             self._column,
+            swimlane,
             self._on_card_dropped
         )
-        self._cards_panel.SetDropTarget(self._drop_target)
+        panel.SetDropTarget(drop_target)
     
-    def _on_card_dropped(self, task_id, target_column):
+    def _on_card_dropped(self, task_id, target_column, target_swimlane):
         """卡片放下时调用。"""
         if self._on_card_moved:
-            self._on_card_moved(task_id, target_column)
+            self._on_card_moved(task_id, target_column, target_swimlane)
     
     def _on_add_task(self, event):
         """添加任务按钮点击。"""
         pass
     
-    def add_card(self, task):
+    def add_card(self, task, swimlane=None):
         """添加卡片。"""
-        card = KanbanCard(self._cards_panel, task, self._column, self._settings)
-        self._cards.append(card)
-        self._cards_sizer.Add(card, 0, wx.ALL | wx.EXPAND, 3)
+        if self._swimlanes and swimlane:
+            swimlane_data = self._swimlane_panels.get(swimlane.id())
+            if swimlane_data:
+                card = KanbanCard(swimlane_data['panel'], task, self._column, swimlane, self._settings)
+                swimlane_data['cards'].append(card)
+                swimlane_data['sizer'].Add(card, 0, wx.ALL | wx.EXPAND, 3)
+                swimlane_data['panel'].Layout()
+        else:
+            card = KanbanCard(self._cards_panel, task, self._column, None, self._settings)
+            self._cards.append(card)
+            self._cards_sizer.Add(card, 0, wx.ALL | wx.EXPAND, 3)
+        
         self._update_count()
         self._check_wip_limit()
         self.Layout()
@@ -322,6 +388,13 @@ class KanbanColumn(wx.Panel):
             if card.get_task() == task:
                 self._cards.remove(card)
                 card.Destroy()
+        
+        for swimlane_data in self._swimlane_panels.values():
+            for card in swimlane_data['cards'][:]:
+                if card.get_task() == task:
+                    swimlane_data['cards'].remove(card)
+                    card.Destroy()
+        
         self._update_count()
         self._check_wip_limit()
         self.Layout()
@@ -331,21 +404,32 @@ class KanbanColumn(wx.Panel):
         for card in self._cards:
             card.Destroy()
         self._cards = []
+        
+        for swimlane_data in self._swimlane_panels.values():
+            for card in swimlane_data['cards']:
+                card.Destroy()
+            swimlane_data['cards'] = []
+        
         self._update_count()
         self._check_wip_limit()
         self.Layout()
     
     def _update_count(self):
         """更新计数。"""
-        self._count_label.SetLabel(str(len(self._cards)))
+        count = len(self._cards)
+        for swimlane_data in self._swimlane_panels.values():
+            count += len(swimlane_data['cards'])
+        self._count_label.SetLabel(str(count))
     
     def _check_wip_limit(self):
         """检查WIP限制。"""
         if self._column.hasWipLimit():
             count = len(self._cards)
+            for swimlane_data in self._swimlane_panels.values():
+                count += len(swimlane_data['cards'])
             limit = self._column.wipLimit()
             if count > limit:
-                self._wip_label.SetLabel(f"({count}/{limit} ⚠)")
+                self._wip_label.SetLabel(f"({count}/{limit} !)")
                 self._wip_label.Show()
             else:
                 self._wip_label.SetLabel(f"({count}/{limit})")
@@ -359,21 +443,28 @@ class KanbanColumn(wx.Panel):
     
     def get_card_count(self):
         """获取卡片数量。"""
-        return len(self._cards)
+        count = len(self._cards)
+        for swimlane_data in self._swimlane_panels.values():
+            count += len(swimlane_data['cards'])
+        return count
     
     def get_task_ids(self):
         """获取所有任务ID。"""
-        return [card.get_task().id() for card in self._cards if card.get_task()]
+        ids = [card.get_task().id() for card in self._cards if card.get_task()]
+        for swimlane_data in self._swimlane_panels.values():
+            ids.extend([card.get_task().id() for card in swimlane_data['cards'] if card.get_task()])
+        return ids
 
 
 class KanbanBoard(wx.Panel):
-    """看板组件，支持拖拽移动。"""
+    """看板组件，支持拖拽移动、泳道和过滤。"""
     
-    def __init__(self, parent, board, task_list, settings, **kwargs):
+    def __init__(self, parent, board, task_list, settings, filter_text="", **kwargs):
         super().__init__(parent, **kwargs)
         self._board = board
         self._task_list = task_list
         self._settings = settings
+        self._filter_text = filter_text
         self._columns = []
         self._task_positions = {}
         self._init_ui()
@@ -384,9 +475,12 @@ class KanbanBoard(wx.Panel):
         
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
+        swimlanes = self._board.swimlanes() if self._board else []
+        
         for column in self._board.columns():
             kanban_column = KanbanColumn(
                 self, column, self._board, self._task_list, self._settings,
+                swimlanes=swimlanes,
                 on_card_moved=self._on_card_moved
             )
             self._columns.append(kanban_column)
@@ -394,19 +488,25 @@ class KanbanBoard(wx.Panel):
         
         self.SetSizer(main_sizer)
     
-    def _on_card_moved(self, task_id, target_column):
+    def _on_card_moved(self, task_id, target_column, target_swimlane):
         """卡片移动时调用。"""
         task = self._find_task_by_id(task_id)
         if task:
             source_column = self._find_column_for_task(task)
             if source_column and source_column != target_column:
                 source_column.remove_card(task)
-                target_column.add_card(task)
+                target_column.add_card(task, target_swimlane)
                 
                 if target_column.taskStatus() is not None:
-                    task.setStatus(target_column.taskStatus())
+                    try:
+                        task.setStatus(target_column.taskStatus())
+                    except:
+                        pass
                 
-                self._task_positions[task_id] = target_column.id()
+                self._task_positions[task_id] = {
+                    'column_id': target_column.id(),
+                    'swimlane_id': target_swimlane.id() if target_swimlane else None
+                }
     
     def _find_task_by_id(self, task_id):
         """根据ID查找任务。"""
@@ -415,25 +515,51 @@ class KanbanBoard(wx.Panel):
                 return task
         return None
     
+    def _filter_task(self, task):
+        """检查任务是否匹配过滤条件。"""
+        if not self._filter_text:
+            return True
+        
+        filter_lower = self._filter_text.lower()
+        
+        try:
+            subject = task.subject().lower()
+            if filter_lower in subject:
+                return True
+        except:
+            pass
+        
+        try:
+            description = task.description().lower()
+            if filter_lower in description:
+                return True
+        except:
+            pass
+        
+        return False
+    
     def refresh_tasks(self, tasks):
         """刷新任务显示。"""
         for column in self._columns:
             column.clear_cards()
         
         for task in tasks:
-            column = self._find_column_for_task(task)
-            if column:
-                column.add_card(task)
+            if self._filter_task(task):
+                column = self._find_column_for_task(task)
+                if column:
+                    swimlane = self._find_swimlane_for_task(task)
+                    column.add_card(task, swimlane)
     
     def _find_column_for_task(self, task):
         """根据任务状态查找对应的列。"""
         task_id = task.id()
         
         if task_id in self._task_positions:
-            column_id = self._task_positions[task_id]
-            for column in self._columns:
-                if column.get_column().id() == column_id:
-                    return column
+            column_id = self._task_positions[task_id].get('column_id')
+            if column_id:
+                for column in self._columns:
+                    if column.get_column().id() == column_id:
+                        return column
         
         for column in self._columns:
             col_entity = column.get_column()
@@ -448,6 +574,24 @@ class KanbanBoard(wx.Panel):
             return self._columns[0]
         return None
     
+    def _find_swimlane_for_task(self, task):
+        """根据任务查找对应的泳道。"""
+        task_id = task.id()
+        
+        if task_id in self._task_positions:
+            swimlane_id = self._task_positions[task_id].get('swimlane_id')
+            if swimlane_id:
+                for swimlane in self._board.swimlanes():
+                    if swimlane.id() == swimlane_id:
+                        return swimlane
+        
+        return None
+    
+    def set_filter(self, filter_text):
+        """设置过滤条件。"""
+        self._filter_text = filter_text
+        self.refresh_tasks(self._task_list)
+    
     def get_board(self):
         """获取看板实体。"""
         return self._board
@@ -458,13 +602,14 @@ class KanbanBoard(wx.Panel):
 
 
 class KanbanViewer(base.Viewer):
-    """看板视图。"""
+    """看板视图，支持泳道和过滤。"""
     
     defaultTitle = _("Kanban board")
     defaultBitmap = "kanban"
     
     def __init__(self, parent, taskFile, settings, *args, **kwargs):
         self._board = None
+        self._filter_text = ""
         super().__init__(parent, taskFile, settings, *args, **kwargs)
     
     def createWidget(self):
@@ -480,6 +625,16 @@ class KanbanViewer(base.Viewer):
         self._board_selector = wx.Choice(toolbar_panel)
         self._board_selector.Bind(wx.EVT_CHOICE, self._on_board_selected)
         toolbar_sizer.Add(self._board_selector, 1, wx.ALL | wx.EXPAND, 5)
+        
+        self._filter_ctrl = wx.TextCtrl(toolbar_panel, style=wx.TE_PROCESS_ENTER)
+        self._filter_ctrl.SetHint(_("Filter tasks..."))
+        self._filter_ctrl.Bind(wx.EVT_TEXT_ENTER, self._on_filter_changed)
+        self._filter_ctrl.Bind(wx.EVT_KILL_FOCUS, self._on_filter_changed)
+        toolbar_sizer.Add(self._filter_ctrl, 1, wx.ALL | wx.EXPAND, 5)
+        
+        clear_filter_btn = wx.Button(toolbar_panel, label="X", size=(30, -1))
+        clear_filter_btn.Bind(wx.EVT_BUTTON, self._on_clear_filter)
+        toolbar_sizer.Add(clear_filter_btn, 0, wx.ALL, 5)
         
         add_board_btn = wx.Button(toolbar_panel, label=_("New board"))
         add_board_btn.Bind(wx.EVT_BUTTON, self._on_add_board)
@@ -515,7 +670,7 @@ class KanbanViewer(base.Viewer):
     
     def _create_default_board(self):
         """创建默认看板。"""
-        from taskcoachlib.domain.kanban import Board, BoardColumn
+        from taskcoachlib.domain.kanban import Board, BoardColumn, Swimlane
         
         board = Board(subject=_("Default board"))
         
@@ -528,6 +683,14 @@ class KanbanViewer(base.Viewer):
         for column in columns:
             board.addColumn(column)
         
+        swimlanes = [
+            Swimlane(subject=_("High priority"), position=0),
+            Swimlane(subject=_("Normal"), position=1),
+        ]
+        
+        for swimlane in swimlanes:
+            board.addSwimlane(swimlane)
+        
         self._board_selector.Append(board.subject(), board)
         self._board_selector.SetSelection(0)
         self._display_board(board)
@@ -539,7 +702,10 @@ class KanbanViewer(base.Viewer):
         for child in self._board_panel.GetChildren():
             child.Destroy()
         
-        self._board = KanbanBoard(self._board_panel, board, self.presentation(), self.settings)
+        self._board = KanbanBoard(
+            self._board_panel, board, self.presentation(), self.settings,
+            filter_text=self._filter_text
+        )
         self._board_sizer.Add(self._board, 1, wx.EXPAND)
         
         self._board_panel.Thaw()
@@ -554,9 +720,23 @@ class KanbanViewer(base.Viewer):
             board = self._board_selector.GetClientData(selection)
             self._display_board(board)
     
+    def _on_filter_changed(self, event):
+        """过滤条件变更事件。"""
+        self._filter_text = self._filter_ctrl.GetValue()
+        if self._board:
+            self._board.set_filter(self._filter_text)
+        event.Skip()
+    
+    def _on_clear_filter(self, event):
+        """清除过滤条件。"""
+        self._filter_ctrl.SetValue("")
+        self._filter_text = ""
+        if self._board:
+            self._board.set_filter("")
+    
     def _on_add_board(self, event):
         """添加看板按钮点击。"""
-        from taskcoachlib.domain.kanban import Board, BoardColumn
+        from taskcoachlib.domain.kanban import Board, BoardColumn, Swimlane
         
         dlg = wx.TextEntryDialog(self, _("Enter board name:"), _("New Board"))
         if dlg.ShowModal() == wx.ID_OK:
@@ -571,6 +751,14 @@ class KanbanViewer(base.Viewer):
             
             for column in columns:
                 board.addColumn(column)
+            
+            swimlanes = [
+                Swimlane(subject=_("High priority"), position=0),
+                Swimlane(subject=_("Normal"), position=1),
+            ]
+            
+            for swimlane in swimlanes:
+                board.addSwimlane(swimlane)
             
             self._board_selector.Append(board.subject(), board)
             self._board_selector.SetSelection(self._board_selector.GetCount() - 1)
