@@ -615,7 +615,7 @@ msgstr "15 分钟"
 
 #: taskcoachlib/domain/date/snooze.py:24
 msgid "20 minutes"
-msgstr "20 dakika"
+msgstr "20分钟"
 
 #: taskcoachlib/domain/date/snooze.py:24
 msgid "30 minutes"
@@ -3334,7 +3334,7 @@ msgstr "在选定子条目处插入新子条目"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:1316
 msgid "Mark task &active\tAlt+RETURN"
-msgstr "(&a)\tAlt+RETURN"
+msgstr "标记任务为活动状态(&a)\tAlt+RETURN"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:1317
 msgid "Mark the selected task(s) active"
