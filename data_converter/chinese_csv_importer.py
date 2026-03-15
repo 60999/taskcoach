@@ -218,6 +218,9 @@ class ChineseCSVImporter:
         time_spent_str = row.get("时间花费", "").strip()
         time_spent_seconds = self._parse_duration(time_spent_str)
         
+        prerequisites_str = row.get("先决条件", "").strip()
+        prerequisites = self._parse_prerequisites_field(prerequisites_str)
+        
         return {
             "id": str(uuid.uuid4()),
             "subject": clean_subject,
@@ -235,6 +238,7 @@ class ChineseCSVImporter:
             "time_spent": time_spent_seconds,
             "reminder": reminder,
             "categories": categories,
+            "prerequisites": prerequisites,
             "parent_id": "",
             "children": [],
             "creation_datetime": creation_datetime,
@@ -286,6 +290,33 @@ class ChineseCSVImporter:
                 categories.append(part)
         
         return list(set(categories))
+    
+    def _parse_prerequisites_field(self, prereq_str: str) -> List[str]:
+        """
+        解析先决条件字段，返回任务主题列表。
+        
+        参数:
+            prereq_str: 先决条件字符串（如 "任务1 -> 任务2"）
+            
+        返回:
+            任务主题列表
+        """
+        if not prereq_str:
+            return []
+        
+        result = []
+        parts = prereq_str.split(",")
+        for part in parts:
+            part = part.strip()
+            if " -> " in part:
+                path_parts = part.split(" -> ")
+                last_part = path_parts[-1].strip()
+                if last_part:
+                    result.append(last_part)
+            elif part:
+                result.append(part)
+        
+        return result
     
     def _parse_datetime(self, datetime_str: str) -> Optional[datetime]:
         """
@@ -415,6 +446,34 @@ class ChineseCSVImporter:
             
             task["categories"] = resolved_categories
     
+    def _resolve_prerequisites(self, prereq_names: List[str]) -> List[str]:
+        """
+        将先决条件任务名称转换为任务ID。
+        
+        参数:
+            prereq_names: 先决条件任务名称列表
+            
+        返回:
+            任务ID列表
+        """
+        prereq_ids = []
+        for name in prereq_names:
+            for task_id, task in self.tasks_by_id.items():
+                if task.get("subject") == name:
+                    prereq_ids.append(task_id)
+                    break
+        return prereq_ids
+    
+    def _resolve_all_prerequisites(self) -> None:
+        """
+        解析所有任务的先决条件引用。
+        """
+        for task_id, task in self.tasks_by_id.items():
+            prereq_names = task.get("prerequisites", [])
+            if prereq_names:
+                prereq_ids = self._resolve_prerequisites(prereq_names)
+                task["prerequisite_ids"] = prereq_ids
+    
     def _write_tsk_file(self, filepath: str) -> None:
         """
         写入TSK XML文件。
@@ -422,6 +481,8 @@ class ChineseCSVImporter:
         参数:
             filepath: 输出文件路径
         """
+        self._resolve_all_prerequisites()
+        
         root = ET.Element("tasks")
         
         for task_id, task in self.tasks_by_id.items():
@@ -508,9 +569,19 @@ class ChineseCSVImporter:
         if task.get("categories"):
             elem.set("categories", " ".join(task["categories"]))
         
+        if task.get("prerequisite_ids"):
+            elem.set("prerequisites", " ".join(task["prerequisite_ids"]))
+        
         if task.get("description"):
             desc_elem = ET.SubElement(elem, "description")
             desc_elem.text = task["description"]
+        
+        if task.get("notes"):
+            notes_elem = ET.SubElement(elem, "notes")
+            notes_elem.text = task["notes"]
+        
+        if task.get("recurrence"):
+            elem.set("recurrence", task["recurrence"])
         
         if task.get("time_spent", 0) > 0:
             effort_elem = self._create_effort_element(task)
