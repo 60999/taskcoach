@@ -22,8 +22,16 @@ User management dialogs for team collaboration.
 
 import wx
 from taskcoachlib import widgets
-from taskcoachlib.i18n import _
 from taskcoachlib.domain.user.auth import PasswordHasher, validate_password_strength
+
+
+def _(text):
+    """延迟加载的翻译函数，避免在模块加载时调用wx.StandardPaths。"""
+    try:
+        from taskcoachlib.i18n import _ as translate
+        return translate(text)
+    except Exception:
+        return text
 
 
 class UserDialog(wx.Dialog):

@@ -23,9 +23,17 @@ Kanban viewer for TaskCoach with drag and drop, swimlane and filter support.
 import wx
 import wx.lib.scrolledpanel as scrolled
 from taskcoachlib import patterns, command
-from taskcoachlib.i18n import _
 from taskcoachlib.gui import uicommand
 from . import base
+
+
+def _(text):
+    """延迟加载的翻译函数，避免在模块加载时调用wx.StandardPaths。"""
+    try:
+        from taskcoachlib.i18n import _ as translate
+        return translate(text)
+    except Exception:
+        return text
 
 
 class KanbanDropTarget(wx.DropTarget):
