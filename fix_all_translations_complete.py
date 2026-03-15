@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-修复 zh_CN.po 文件中所有空翻译
+全面修复 zh_CN.po 文件中的所有空翻译
+包含111个空翻译的中文翻译
 """
 import re
 import shutil
 
+# 所有空翻译的完整映射
 TRANSLATIONS = {
+    "This setting can be overridden for individual tasks\nin the task edit dialog.": 
+        "此设置可以在任务编辑对话框中为单个任务覆盖。",
+    
     "If there is no user input for this amount of time\n(in minutes), %(name)s will ask what to do about current efforts.": 
         "如果用户在此时间内（以分钟计）没有输入，%(name)s 将询问如何处理当前的工作记录。",
     
@@ -26,6 +31,9 @@ TRANSLATIONS = {
     
     "Couldn't restore the pane layout from TaskCoach.ini:\n%s\n\nThe default pane layout will be used.": 
         "无法从TaskCoach.ini恢复面板布局：\n%s\n\n将使用默认面板布局。",
+    
+    "Merge &disk changes\tShift-Ctrl-M": 
+        "合并磁盘更改(&D)\tShift-Ctrl-M",
     
     "When in tree mode, manual ordering is only possible when all selected items are at the same level.": 
         "在树形模式下，只有当所有选中项处于同一级别时才能手动排序。",
@@ -327,31 +335,16 @@ TRANSLATIONS = {
     "An error occurred in the synchronization.\nError code: %d; message: %s": 
         "同步过程中发生错误。\n错误代码：%d；消息：%s",
     
-    "This setting can be overridden for individual tasks\nin the task edit dialog.": 
-        "此设置可以在任务编辑对话框中为单个任务覆盖。",
-    
-    "Merge &disk changes\tShift-Ctrl-M": 
-        "合并磁盘更改(&D)\tShift-Ctrl-M",
-    
     "\"><b>": 
         "\"><b>",
     
     "<body bgcolor=\"#": 
         "<body bgcolor=\"#",
-    
-    "%(name)s will remember the chosen instance and try it next time\nyou synchronize; if it's not running, it will prompt you again.": 
-        "%(name)s将记住选择的实例，并在下次\n同步时尝试它；如果未运行，将再次提示您。",
-    
-    "Note that this synchronization happens through the network; there \nis no need for the device to be connected through USB nor for iTunes to\nbe running.": 
-        "请注意，此同步通过网络进行；\n不需要通过USB连接设备，也不需要iTunes运行。",
-    
-    "On Windows, you must install <a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour for Windows</a> and\nunblock it when asked by the firewall.": 
-        "在Windows上，您必须安装<a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour for Windows</a>并在\n防火墙询问时解除阻止。",
 }
 
 
-def fix_translations(input_file, output_file):
-    """修复po文件中的空翻译"""
+def fix_all_translations(input_file, output_file):
+    """修复po文件中的所有空翻译"""
     with open(input_file, 'r', encoding='utf-8') as f:
         content = f.read()
     
@@ -363,65 +356,80 @@ def fix_translations(input_file, output_file):
     while i < len(lines):
         line = lines[i]
         
-        # 检查是否是多行msgid开始
-        if line.strip() == 'msgid ""':
-            # 收集msgid内容
-            msgid_lines = []
-            j = i + 1
-            while j < len(lines) and lines[j].strip().startswith('"') and not lines[j].strip().startswith('msgstr'):
-                msgid_lines.append(lines[j].strip())
-                j += 1
-            
-            # 提取msgid文本
-            msgid_text = ''
-            for ml in msgid_lines:
-                if ml.startswith('"') and ml.endswith('"'):
-                    content_part = ml[1:-1]
-                    content_part = content_part.replace('\\n', '\n')
-                    content_part = content_part.replace('\\t', '\t')
-                    content_part = content_part.replace('\\"', '"')
-                    content_part = content_part.replace('\\\\', '\\')
-                    msgid_text += content_part
-            
-            # 找到msgstr行
-            k = j
-            while k < len(lines) and not lines[k].strip().startswith('msgstr'):
-                k += 1
-            
-            # 检查是否是空翻译
-            is_empty = False
-            if k < len(lines) and lines[k].strip() == 'msgstr ""':
-                next_line = k + 1
-                has_content = False
-                while next_line < len(lines) and lines[next_line].strip().startswith('"'):
-                    if lines[next_line].strip() != '""':
-                        has_content = True
-                        break
-                    next_line += 1
-                is_empty = not has_content
-            
-            if is_empty and msgid_text in TRANSLATIONS:
-                translation = TRANSLATIONS[msgid_text]
-                
-                # 写入msgid行
-                result.append(line)
-                for ml in msgid_lines:
-                    result.append(ml)
-                
-                # 写入翻译
-                result.append('msgstr ""')
-                for trans_line in translation.split('\n'):
-                    result.append(f'"{trans_line}"')
-                
-                fixed_count += 1
-                i = k + 1
-                # 跳过空的msgstr行
-                while i < len(lines) and lines[i].strip().startswith('"') and lines[i].strip() == '""':
+        # 检查是否是msgid开始
+        if line.strip().startswith('msgid'):
+            # 收集完整的msgid
+            msgid_parts = []
+            if line.strip() == 'msgid ""':
+                # 多行msgid
+                i += 1
+                while i < len(lines) and lines[i].strip().startswith('"') and not lines[i].strip().startswith('msgstr'):
+                    content_line = lines[i].strip()
+                    if content_line.startswith('"') and content_line.endswith('"'):
+                        msgid_parts.append(content_line[1:-1])
                     i += 1
-                continue
+            else:
+                # 单行msgid
+                msgid_content = line.strip()[7:-1]  # 去掉 msgid " 和结尾的 "
+                msgid_parts.append(msgid_content)
+                i += 1
             
-            # 写入原始行
-            result.append(line)
+            # 合并msgid
+            full_msgid = ''.join(msgid_parts)
+            # 处理转义
+            full_msgid = full_msgid.replace('\\n', '\n')
+            full_msgid = full_msgid.replace('\\t', '\t')
+            full_msgid = full_msgid.replace('\\"', '"')
+            full_msgid = full_msgid.replace('\\\\', '\\')
+            
+            # 找到msgstr
+            while i < len(lines) and not lines[i].strip().startswith('msgstr'):
+                result.append(lines[i])
+                i += 1
+            
+            if i < len(lines):
+                msgstr_line = lines[i].strip()
+                
+                # 检查是否是空翻译
+                is_empty = False
+                if msgstr_line == 'msgstr ""':
+                    # 检查下一行是否有翻译内容
+                    next_idx = i + 1
+                    has_content = False
+                    while next_idx < len(lines) and lines[next_idx].strip().startswith('"'):
+                        if lines[next_idx].strip() != '""':
+                            has_content = True
+                            break
+                        next_idx += 1
+                    is_empty = not has_content
+                
+                # 如果有空翻译且有对应的翻译
+                if is_empty and full_msgid in TRANSLATIONS:
+                    translation = TRANSLATIONS[full_msgid]
+                    
+                    # 写入msgid
+                    if len(msgid_parts) > 1 or '\n' in full_msgid:
+                        result.append('msgid ""')
+                        for part in msgid_parts:
+                            result.append(f'"{part}"')
+                    else:
+                        result.append(f'msgid "{full_msgid}"')
+                    
+                    # 写入翻译
+                    if '\n' in translation:
+                        result.append('msgstr ""')
+                        for trans_line in translation.split('\n'):
+                            result.append(f'"{trans_line}"')
+                    else:
+                        result.append(f'msgstr "{translation}"')
+                    
+                    fixed_count += 1
+                    i = next_idx
+                    continue
+                else:
+                    result.append(lines[i])
+            else:
+                result.append(line)
         else:
             result.append(line)
         
@@ -444,5 +452,5 @@ if __name__ == '__main__':
     print(f"已备份到: {backup_file}")
     
     # 修复翻译
-    count = fix_translations(input_file, output_file)
+    count = fix_all_translations(input_file, output_file)
     print(f"已修复 {count} 个空翻译")

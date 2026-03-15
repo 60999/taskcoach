@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-检查 zh_CN.po 文件中的空翻译
+检查 zh_CN.po 文件中的所有空翻译
 """
 import re
 
@@ -11,7 +11,6 @@ def check_empty_translations():
     with open(po_file, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # 找到所有 msgid 和 msgstr 对（包括多行msgid）
     lines = content.split('\n')
     empty_translations = []
     
@@ -21,18 +20,18 @@ def check_empty_translations():
         
         # 检查是否是 msgid 行
         if line.startswith('msgid "'):
-            # 提取 msgid
             msgid_lines = []
             if line == 'msgid ""':
                 # 多行 msgid
                 i += 1
-                while i < len(lines) and lines[i].strip().startswith('"'):
+                while i < len(lines) and lines[i].strip().startswith('"') and not lines[i].strip().startswith('msgstr'):
                     msgid_lines.append(lines[i].strip().strip('"'))
                     i += 1
                 msgid = ''.join(msgid_lines)
             else:
                 # 单行 msgid
-                msgid = line[7:-1]  # 去掉 msgid " 和结尾的 "
+                msgid = line[7:].rstrip('"')
+                i += 1
             
             # 找 msgstr
             while i < len(lines) and not lines[i].strip().startswith('msgstr'):

@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-修复 zh_CN.po 文件中所有空翻译
+修复 zh_CN.po 文件中所有剩余空翻译
 """
-import re
 import shutil
 
 TRANSLATIONS = {
-    "If there is no user input for this amount of time\n(in minutes), %(name)s will ask what to do about current efforts.": 
-        "如果用户在此时间内（以分钟计）没有输入，%(name)s 将询问如何处理当前的工作记录。",
-    
-    "Display one hour, fifteen minutes as 1.25 instead of 1:15\nThis is useful when creating invoices.": 
-        "将一小时十五分钟显示为1.25而不是1:15\n这在创建发票时很有用。",
-    
-    "New tasks start with \"Preset\" dates and times filled in and checked. \"Proposed\" dates and times are filled in, but not checked.\n\n\"Start of day\" is midnight and \"End of day\" is just before midnight. When using these, task viewers hide the time and show only the date.\n\n\"Start of working day\" and \"End of working day\" use the working day as set in the Features tab of this preferences dialog.": 
-        "新任务以\"预设\"日期和时间填充并选中。\"建议\"的日期和时间已填充但未选中。\n\n\"一天开始\"是午夜，\"一天结束\"是午夜前一刻。使用这些时，任务查看器隐藏时间只显示日期。\n\n\"工作日开始\"和\"工作日结束\"使用此首选项对话框功能选项卡中设置的工作日。",
-    
     "When dropping an e-mail from Mail.app, try to get its subject.\nThis takes up to a few seconds per e-mail.": 
         "当从Mail.app拖放邮件时，尝试获取其主题。\n每封邮件可能需要几秒钟。",
     
@@ -26,6 +16,9 @@ TRANSLATIONS = {
     
     "Couldn't restore the pane layout from TaskCoach.ini:\n%s\n\nThe default pane layout will be used.": 
         "无法从TaskCoach.ini恢复面板布局：\n%s\n\n将使用默认面板布局。",
+    
+    "Merge &disk changes\tShift-Ctrl-M": 
+        "合并磁盘更改(&D)\tShift-Ctrl-M",
     
     "When in tree mode, manual ordering is only possible when all selected items are at the same level.": 
         "在树形模式下，只有当所有选中项处于同一级别时才能手动排序。",
@@ -50,21 +43,6 @@ TRANSLATIONS = {
     
     "Prerequisites: other tasks that need to be completed before\na task can be started.": 
         "前置任务：在任务开始之前\n需要完成的其他任务。",
-    
-    "Fixed fee: the amount of money earned with the task \nregardless of the time spent.": 
-        "固定费用：无论花费多少时间\n任务赚取的金额。",
-    
-    "Dependents: other tasks that can be started when the \nprerequisite task has been completed.": 
-        "依赖项：前置任务完成后\n可以开始的其他任务。",
-    
-    "Inactive: the task has not been started and/or not all \nprerequisite tasks have been completed;": 
-        "非活动：任务尚未开始和/或并非所有\n前置任务都已完成；",
-    
-    "Due soon: the due date is soon (what 'soon' is, can be \nchanged in the preferences);": 
-        "即将到期：截止日期很快（什么是'很快'\n可以在首选项中更改）；",
-    
-    "Late: the planned start is in the past and the task has \nnot been started;": 
-        "迟到：计划开始在过去但任务\n尚未开始；",
     
     "This all assumes you have not changed the text colors through the \npreferences dialog.": 
         "所有这些都假设您没有通过首选项对话框\n更改文本颜色。",
@@ -114,9 +92,6 @@ TRANSLATIONS = {
     "A task file may be opened by several instances of %(name)s, either\nrunning on the same computer or on different computers.": 
         "任务文件可以被%(name)s的多个实例打开，\n无论是在同一台计算机上还是在不同的计算机上运行。",
     
-    "A single user, opening the task file on several computers (work,\nhome, laptop).": 
-        "单个用户，在多台计算机上打开任务文件（工作、\n家庭、笔记本电脑）。",
-    
     "The first case is the most common and the most secure. The second\ncase may be dangerous.": 
         "第一种情况最常见也最安全。第二种\n情况可能很危险。",
     
@@ -153,9 +128,6 @@ TRANSLATIONS = {
     "To setup SyncML, edit the SyncML preferences in Edit/SyncML \npreferences. Fill in the server URL, username and password.": 
         "要设置SyncML，请在编辑/SyncML首选项中\n编辑SyncML首选项。填写服务器URL、用户名和密码。",
     
-    "The database names are pretty standard; the default values \nshould work.": 
-        "数据库名称相当标准；默认值\n应该可以工作。",
-    
     "Each task file has its own client ID, so that two different task \nfiles will be synchronized independently.": 
         "每个任务文件都有自己的客户端ID，因此两个不同的任务\n文件将独立同步。",
     
@@ -164,9 +136,6 @@ TRANSLATIONS = {
     
     "The conflict detection/resolution system is a workaround \nfor a Funambol limitation.": 
         "冲突检测/解决系统是\nFunambol限制的变通方法。",
-    
-    "The SyncML menu items are only present if your platform is \nsupported. Currently supported platforms are:": 
-        "SyncML菜单项仅在您的平台\n受支持时才存在。目前支持的平台是：",
     
     "You may experience problems under Windows if you don't have the \nMicrosoft Visual C++ 2008 Redistributable Package installed.": 
         "如果您没有安装Microsoft Visual C++ 2008可再发行组件包，\n您可能会在Windows下遇到问题。",
@@ -180,14 +149,8 @@ TRANSLATIONS = {
     "There is an iPhone/iPod Touch/iPad companion app for %(name)s, \navailable on <a href=\"http://itunes.com/app/taskcoach/\">Apple's App Store</a>.": 
         "%(name)s有一个iPhone/iPod Touch/iPad伴侣应用，\n可在<a href=\"http://itunes.com/app/taskcoach/\">Apple的App Store</a>上获得。",
     
-    "Basic task attributes: subject, description, dates (with \nrecurrence)...": 
-        "基本任务属性：主题、描述、日期（带重复）...",
-    
     "There are some settings for the iPhone/iPod Touch/iPad app in the \nSettings app on your device.": 
         "您设备上的设置应用中有一些\niPhone/iPod Touch/iPad应用的设置。",
-    
-    "Show inactive: whether to show inactive tasks (planned start date \nin the future).": 
-        "显示非活动：是否显示非活动任务（计划开始日期\n在未来）。",
     
     "Icon position: the LED icon may show up either on the \nleft side or the right side of the task.": 
         "图标位置：LED图标可以显示在任务的\n左侧或右侧。",
@@ -198,29 +161,14 @@ TRANSLATIONS = {
     "Confirm complete: if enabled, a message box will pop up for \nconfirmation when completing a task.": 
         "确认完成：如果启用，完成任务时\n会弹出消息框进行确认。",
     
-    "# days due soon: How many days in the future is \nconsidered \"soon\".": 
-        "即将到期天数：未来多少天\n被认为是\"很快\"。",
-    
     "Before synchronizing, you must also configure %(name)s on the \ndesktop; in the preferences, iPhone page.": 
         "同步之前，您还必须在桌面上配置%(name)s；\n在首选项中，iPhone页面。",
     
     "When you tap the \"Sync\" button in the category view, %(name)s\nwill automatically try to find a running desktop instance.": 
         "当您在类别视图中点击\"同步\"按钮时，%(name)s\n将自动尝试查找正在运行的桌面实例。",
     
-    "%(name)s will remember the chosen instance and try it next time\nyou synchronize.": 
-        "%(name)s将记住选择的实例，并在下次\n同步时尝试它。",
-    
-    "Note that this synchronization happens through the network; there \nis no need for a cable.": 
-        "请注意，此同步通过网络进行；\n不需要电缆。",
-    
-    "On Windows, you must install <a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour</a> for this to work.": 
-        "在Windows上，您必须安装<a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour</a>才能使其工作。",
-    
     "On Linux, you must have the <a href=\"http://avahi.org/\">Avahi</a> \ndaemon installed and running.": 
         "在Linux上，您必须安装并运行\n<a href=\"http://avahi.org/\">Avahi</a>守护程序。",
-    
-    "I can't seem to find the iPhone/iPod Touch app on Apple's \nwebsite": 
-        "我似乎在Apple网站上\n找不到iPhone/iPod Touch应用",
     
     "You need to have iTunes installed on your computer to browse \nApple's App Store.": 
         "您需要在计算机上安装iTunes才能浏览\nApple的App Store。",
@@ -276,9 +224,6 @@ TRANSLATIONS = {
     "You can also add templates from the template editor (File/Edit\ntemplates), as well as remove templates.": 
         "您也可以从模板编辑器（文件/编辑\n模板）添加模板，以及删除模板。",
     
-    "Please note that this system is not localized; you must enter\nthe dates in english.": 
-        "请注意，此系统未本地化；您必须\n以英语输入日期。",
-    
     "You can drag and drop viewers to create almost any user interface \nlayout you want.": 
         "您可以拖放查看器来创建几乎任何您想要的\n用户界面布局。",
     
@@ -297,56 +242,17 @@ TRANSLATIONS = {
     "An iPhone or iPod Touch tried to connect to Task Coach,\nbut no password is set. Please set a password in the preferences.": 
         "iPhone或iPod Touch尝试连接到Task Coach，\n但未设置密码。请在首选项中设置密码。",
     
-    "Malformed Thunderbird internal ID:\n%s. Please file a bug report.": 
-        "Thunderbird内部ID格式错误：\n%s。请提交错误报告。",
-    
-    "Could not find directory for ID\n%s.\nPlease file a bug report.": 
-        "找不到ID的目录\n%s。\n请提交错误报告。",
-    
     "Unrecognized URL scheme: \"%s\"": 
         "无法识别的URL方案：\"%s\"",
     
     "Could not open an IMAP connection to %(server)s:%(port)s\nto retrieve Thunderbird message.": 
         "无法打开到%(server)s:%(port)s的IMAP连接\n以检索Thunderbird消息。",
     
-    "Could not select inbox \"%s\"\n(%s)": 
-        "无法选择收件箱\"%s\"\n(%s)",
-    
-    "will be a refresh from server. All local items will\nbe deleted. Do you wish to continue?": 
-        "将从服务器刷新。所有本地项目将\n被删除。您要继续吗？",
-    
-    "will be a refresh from client. All remote items will\nbe deleted. Do you wish to continue?": 
-        "将从客户端刷新。所有远程项目将\n被删除。您要继续吗？",
-    
-    "Synchronizing. Please wait.\n\n\n": 
-        "正在同步。请稍候。\n\n\n",
-    
-    "%d items added.\n%d items updated.\n%d items deleted.": 
-        "添加了%d个项目。\n更新了%d个项目。\n删除了%d个项目。",
-    
-    "An error occurred in the synchronization.\nError code: %d; message: %s": 
-        "同步过程中发生错误。\n错误代码：%d；消息：%s",
-    
-    "This setting can be overridden for individual tasks\nin the task edit dialog.": 
-        "此设置可以在任务编辑对话框中为单个任务覆盖。",
-    
-    "Merge &disk changes\tShift-Ctrl-M": 
-        "合并磁盘更改(&D)\tShift-Ctrl-M",
-    
     "\"><b>": 
         "\"><b>",
     
     "<body bgcolor=\"#": 
         "<body bgcolor=\"#",
-    
-    "%(name)s will remember the chosen instance and try it next time\nyou synchronize; if it's not running, it will prompt you again.": 
-        "%(name)s将记住选择的实例，并在下次\n同步时尝试它；如果未运行，将再次提示您。",
-    
-    "Note that this synchronization happens through the network; there \nis no need for the device to be connected through USB nor for iTunes to\nbe running.": 
-        "请注意，此同步通过网络进行；\n不需要通过USB连接设备，也不需要iTunes运行。",
-    
-    "On Windows, you must install <a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour for Windows</a> and\nunblock it when asked by the firewall.": 
-        "在Windows上，您必须安装<a\nhref=\"http://support.apple.com/kb/dl999\">Bonjour for Windows</a>并在\n防火墙询问时解除阻止。",
 }
 
 
@@ -363,16 +269,13 @@ def fix_translations(input_file, output_file):
     while i < len(lines):
         line = lines[i]
         
-        # 检查是否是多行msgid开始
         if line.strip() == 'msgid ""':
-            # 收集msgid内容
             msgid_lines = []
             j = i + 1
             while j < len(lines) and lines[j].strip().startswith('"') and not lines[j].strip().startswith('msgstr'):
                 msgid_lines.append(lines[j].strip())
                 j += 1
             
-            # 提取msgid文本
             msgid_text = ''
             for ml in msgid_lines:
                 if ml.startswith('"') and ml.endswith('"'):
@@ -383,12 +286,10 @@ def fix_translations(input_file, output_file):
                     content_part = content_part.replace('\\\\', '\\')
                     msgid_text += content_part
             
-            # 找到msgstr行
             k = j
             while k < len(lines) and not lines[k].strip().startswith('msgstr'):
                 k += 1
             
-            # 检查是否是空翻译
             is_empty = False
             if k < len(lines) and lines[k].strip() == 'msgstr ""':
                 next_line = k + 1
@@ -403,31 +304,26 @@ def fix_translations(input_file, output_file):
             if is_empty and msgid_text in TRANSLATIONS:
                 translation = TRANSLATIONS[msgid_text]
                 
-                # 写入msgid行
                 result.append(line)
                 for ml in msgid_lines:
                     result.append(ml)
                 
-                # 写入翻译
                 result.append('msgstr ""')
                 for trans_line in translation.split('\n'):
                     result.append(f'"{trans_line}"')
                 
                 fixed_count += 1
                 i = k + 1
-                # 跳过空的msgstr行
                 while i < len(lines) and lines[i].strip().startswith('"') and lines[i].strip() == '""':
                     i += 1
                 continue
             
-            # 写入原始行
             result.append(line)
         else:
             result.append(line)
         
         i += 1
     
-    # 写入输出文件
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(result))
     
@@ -438,11 +334,9 @@ if __name__ == '__main__':
     input_file = r'd:\Development\taskcoach\taskcoachlib\i18n\locales\zh_CN.po'
     output_file = r'd:\Development\taskcoach\taskcoachlib\i18n\locales\zh_CN.po'
     
-    # 先备份
-    backup_file = input_file + '.bak_final'
+    backup_file = input_file + '.bak_final2'
     shutil.copy(input_file, backup_file)
     print(f"已备份到: {backup_file}")
     
-    # 修复翻译
     count = fix_translations(input_file, output_file)
     print(f"已修复 {count} 个空翻译")

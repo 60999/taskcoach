@@ -2158,8 +2158,6 @@ msgid ""
 "When dropping an e-mail from Mail.app, try to get its subject.\n"
 "This takes up to 20 seconds."
 msgstr ""
-"当从Mail.app拖放邮件时，尝试获取其主题。"
-"每封邮件可能需要几秒钟。"
 
 #: taskcoachlib/gui/dialog/preferences.py:747
 msgid "Linux"
@@ -2174,8 +2172,6 @@ msgid ""
 "When opening the task editor, select the task subject and focus it.\n"
 "This overwrites the X selection."
 msgstr ""
-"打开任务编辑器时，选择并聚焦任务主题。"
-"这将覆盖默认的聚焦第一个标签页的行为。"
 
 #: taskcoachlib/gui/dialog/reminder.py:31
 msgid "%(name)s reminder - %(task)s"
@@ -2604,8 +2600,6 @@ msgid ""
 "The backup manager will now open to allow you to restore\n"
 "an older version of this file."
 msgstr ""
-"备份管理器现在将打开，允许您恢复"
-"任务文件的旧版本。"
 
 #: taskcoachlib/gui/iphone.py:31
 msgid "Synchronizing..."
@@ -2630,10 +2624,6 @@ msgid ""
 "closing the program, open a bug report, and attach the copied TaskCoach.ini "
 "file to the bug report."
 msgstr ""
-"无法从TaskCoach.ini恢复面板布局："
-"%s"
-""
-"将使用默认面板布局。"
 
 #: taskcoachlib/gui/mainwindow.py:208
 msgid "%s settings error"
@@ -2946,7 +2936,7 @@ msgstr "保存(&S)\tCtrl+S"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:147
 msgid "Merge &disk changes\tShift-Ctrl-M"
-msgstr "合并磁盘更改(&D)\tShift-Ctrl-M"
+msgstr ""
 
 #: taskcoachlib/gui/uicommand/uicommand.py:161
 msgid "S&ave as...\tShift+Ctrl+S"
@@ -3850,7 +3840,6 @@ msgid ""
 "When in tree mode, manual ordering is only possible when all selected items "
 "are siblings."
 msgstr ""
-"在树形模式下，只有当所有选中项处于同一级别时才能手动排序。"
 
 #: taskcoachlib/gui/viewer/base.py:839
 msgid ""
@@ -3979,7 +3968,6 @@ msgid ""
 "Effort: %d selected, %d visible, %d total. Time spent: %s selected, %s "
 "visible, %s total"
 msgstr ""
-"工作记录：%d 已选，%d 可见，%d 总计。花费时间：%s 已选，%s 可见，%s 总计。"
 
 #: taskcoachlib/gui/viewer/effort.py:412
 msgid "Status: %d tracking"
@@ -4227,7 +4215,6 @@ msgid ""
 "Shift-click on a filter tool to see only tasks belonging to the "
 "corresponding status"
 msgstr ""
-"Shift键点击过滤工具可只查看属于相应状态的任务。"
 
 #: taskcoachlib/gui/viewer/task.py:132 taskcoachlib/help/__init__.py:81
 #: taskcoachlib/help/__init__.py:159 taskcoachlib/widgets/hcalendar.py:286
@@ -4271,7 +4258,6 @@ msgid ""
 "Show the \"Manual ordering\" column, then drag and drop items from this "
 "column to sort them arbitrarily."
 msgstr ""
-"显示"手动排序"列，然后从此列拖放项目来重新排序。"
 
 #: taskcoachlib/gui/viewer/task.py:1022
 msgid "Dependents"
@@ -4701,8 +4687,6 @@ msgid ""
 "represent anything from a single little thing you have to do to a complete \n"
 "project consisting of different phases and numerous activities."
 msgstr ""
-"任务是您操作的基本对象。任务可以"
-"代表从简单差事到复杂项目的任何事情。"
 
 #: taskcoachlib/help/__init__.py:169
 msgid "Tasks have the following properties you can change:"
@@ -4725,8 +4709,6 @@ msgid ""
 "convenient \n"
 "for e.g. registering sick leave."
 msgstr ""
-"计划开始日期：可以开始任务的第一个日期。"
-"计划开始日期可以是未来的；如果是，则任务处于非活动状态。"
 
 #: taskcoachlib/help/__init__.py:177
 msgid ""
@@ -4755,8 +4737,6 @@ msgid ""
 "\n"
 "completed. The completion date can also be entered manually."
 msgstr ""
-"完成日期：只要任务尚未完成，此日期为'无'。"
-"当任务完成时，完成日期被设置。"
 
 #: taskcoachlib/help/__init__.py:186
 msgid ""
@@ -4768,8 +4748,6 @@ msgid ""
 "date has to be in the past <em>and</em> all prerequisite tasks need to be\n"
 "completed before the task becomes late."
 msgstr ""
-"前置任务：在任务开始之前"
-"需要完成的其他任务。"
 
 #: taskcoachlib/help/__init__.py:191
 msgid "Budget: amount of hours available for the task."
@@ -4904,8 +4882,6 @@ msgid ""
 "This all assumes you have not changed the text colors through the \n"
 "preferences dialog, of course."
 msgstr ""
-"所有这些都假设您没有通过首选项对话框"
-"更改文本颜色。"
 
 #: taskcoachlib/help/__init__.py:238
 msgid ""
@@ -4913,7 +4889,6 @@ msgid ""
 "task belongs to. See the section about \n"
 "<a href=\"#categoryproperties\">category properties</a> below."
 msgstr ""
-"任务的背景颜色由任务所属的类别决定。"
 
 #: taskcoachlib/help/__init__.py:244
 msgid ""
@@ -4922,8 +4897,6 @@ msgid ""
 "you can open the task, start tracking effort for the task, or mark the task\n"
 "completed. It is also possible to snooze the reminder."
 msgstr ""
-"您可以为特定日期和时间设置提醒。%(name)s将在"
-"该日期和时间到达时显示提醒对话框。"
 
 #: taskcoachlib/help/__init__.py:258
 msgid ""
@@ -4933,8 +4906,6 @@ msgid ""
 "the Effort menu or context menu or via the 'Start tracking effort' toolbar \n"
 "button."
 msgstr ""
-"每当您在任务上花费时间时，您可以通过跟踪工作记录"
-"来记录花费的时间量。"
 
 #: taskcoachlib/help/__init__.py:265
 msgid "Effort records have the following properties you can change:"
@@ -4953,8 +4924,6 @@ msgid ""
 "Stop date/time: stop date and time of the effort. This can be \n"
 "'None' as long as you are still working on the task."
 msgstr ""
-"停止日期/时间：工作记录的停止日期和时间。只要"
-"工作记录仍在跟踪，这可以是'无'。"
 
 #: taskcoachlib/help/__init__.py:271
 msgid "Description: a multi-line description of the effort."
@@ -4977,8 +4946,6 @@ msgid ""
 "the \n"
 "relevant categories for that item in the category pane of the edit dialog."
 msgstr ""
-"任务和笔记可以属于一个或多个类别。首先，您"
-"需要创建要使用的类别。"
 
 #: taskcoachlib/help/__init__.py:289
 msgid ""
@@ -4990,8 +4957,6 @@ msgid ""
 "\n"
 "phone calls you need to make."
 msgstr ""
-"您可以通过选中类别过滤器来限制任务和笔记查看器中"
-"显示的项目为一个或多个类别。"
 
 #: taskcoachlib/help/__init__.py:297
 msgid "Categories have the following properties you can change:"
@@ -5014,8 +4979,6 @@ msgid ""
 "only\n"
 "filter by one of the subcategories at a time."
 msgstr ""
-"互斥子类别：一个复选框，指示"
-"子类别是否互斥。"
 
 #: taskcoachlib/help/__init__.py:305
 msgid ""
@@ -5031,8 +4994,6 @@ msgid ""
 "associated with it, a mixture of those colors will be used to render that \n"
 "item."
 msgstr ""
-"外观属性如图标、字体和颜色："
-"当任务或笔记属于该类别时使用外观属性。"
 
 #: taskcoachlib/help/__init__.py:319
 msgid ""
@@ -5043,8 +5004,6 @@ msgid ""
 "viewer. Notes that are part of other items are not displayed in the notes\n"
 "viewer."
 msgstr ""
-"笔记可用于捕获您想要"
-"保留在任务文件中的随机信息。"
 
 #: taskcoachlib/help/__init__.py:327
 msgid "Notes have the following properties you can change:"
@@ -5072,8 +5031,6 @@ msgid ""
 "details get printed or exported. When you filter items, for example hide\n"
 "completed tasks, those items don't get printed or exported."
 msgstr ""
-"打印和导出都以相同的方式工作：当您打印"
-"或导出数据时，会执行以下步骤："
 
 #: taskcoachlib/help/__init__.py:350 taskcoachlib/help/__init__.py:362
 msgid ""
@@ -5081,8 +5038,6 @@ msgid ""
 "right order, show or hide the appropriate columns and apply the relevant \n"
 "filters."
 msgstr ""
-"准备查看器的内容，通过将项目按正确顺序排列，"
-"根据需要显示或隐藏列。"
 
 #: taskcoachlib/help/__init__.py:354
 msgid ""
@@ -5093,8 +5048,6 @@ msgid ""
 "choose to print all visible items in the active viewer, or just the \n"
 "selected items."
 msgstr ""
-"您可以使用文件 -> 打印预览菜单项"
-"预览打印效果。"
 
 #: taskcoachlib/help/__init__.py:366
 msgid ""
@@ -5105,8 +5058,6 @@ msgid ""
 "you export to HTML, a CSS file is created that you can edit to change\n"
 "the appearance of the HTML."
 msgstr ""
-"接下来，选择您要导出的格式以及"
-"要导出所有项目还是仅导出所选项目。"
 
 #: taskcoachlib/help/__init__.py:376
 msgid "Custom attributes for e-mailing tasks"
@@ -5119,8 +5070,6 @@ msgid ""
 "Supported\n"
 "attributes are 'cc' and 'to'. Examples:"
 msgstr ""
-"您可以使用任务描述中的自定义属性"
-"更改电子邮件命令的行为。"
 
 #: taskcoachlib/help/__init__.py:381
 msgid "[email:to=foo@spam.com]"
@@ -5140,8 +5089,6 @@ msgid ""
 "automatically\n"
 "resolved, usually by you winning the conflict. This serves two use cases:"
 msgstr ""
-"任务文件可以被%(name)s的多个实例打开，"
-"无论是在同一台计算机上还是在不同的计算机上运行。"
 
 #: taskcoachlib/help/__init__.py:397
 msgid ""
@@ -5164,8 +5111,6 @@ msgid ""
 "protocols\n"
 "and their behaviour follows."
 msgstr ""
-"第一种情况最常见也最安全。第二种"
-"情况可能很危险。"
 
 #: taskcoachlib/help/__init__.py:408
 msgid ""
@@ -5173,8 +5118,6 @@ msgid ""
 "save their changes within a few hundreds of milliseconds time frame, data "
 "will be lost."
 msgstr ""
-"这里讨论的共享选项都不能完全工作。如果两个用户"
-"同时保存更改，数据将丢失。"
 
 #: taskcoachlib/help/__init__.py:411
 msgid "SMB/CIFS"
@@ -5188,8 +5131,6 @@ msgid ""
 "be able to detect automatically when the file has been modified by someone "
 "else."
 msgstr ""
-"这是最常见的协议：Windows共享及其类似物"
-"（Samba）。此协议在局域网上工作良好。"
 
 #: taskcoachlib/help/__init__.py:417
 msgid "NFS"
@@ -5210,8 +5151,6 @@ msgid ""
 "detected by %(name)s\n"
 "when it's updated."
 msgstr ""
-"一种从多台计算机访问文件的流行方式（也可以看看SpiderOak"
-"作为安全的替代方案）。"
 
 #: taskcoachlib/help/__init__.py:434
 msgid ""
@@ -5223,8 +5162,6 @@ msgid ""
 "e-mail attachments on a system which is different from the one you\n"
 "created it first."
 msgstr ""
-"%(name)s与多个邮件用户代理集成，"
-"通过拖放。这允许您将电子邮件附加到任务。"
 
 #: taskcoachlib/help/__init__.py:442
 msgid "Mail user agents supported include:"
@@ -5251,8 +5188,6 @@ msgid ""
 "Due to a Thunderbird limitation, you can't drag and drop several\n"
 "e-mails from Thunderbird. This does not apply to Outlook."
 msgstr ""
-"由于Thunderbird的限制，您无法一次从Thunderbird"
-"拖放多封电子邮件。"
 
 #: taskcoachlib/help/__init__.py:454
 msgid "There are two ways to attach an e-mail to a task; you can:"
@@ -5273,8 +5208,6 @@ msgid ""
 "description is its content. Additionally, the mail is automatically\n"
 "attached to the newly created task."
 msgstr ""
-"将电子邮件拖放到任务树或任务列表的空白部分"
-"会创建一个附加了电子邮件的新任务。"
 
 #: taskcoachlib/help/__init__.py:473
 msgid ""
@@ -5288,8 +5221,6 @@ msgid ""
 "which allow the server to synchronize with Exchange, Google Calendar,\n"
 "etc."
 msgstr ""
-"SyncML是一种XML协议，旨在将多个"
-"应用程序与服务器同步。"
 
 #: taskcoachlib/help/__init__.py:481
 msgid ""
@@ -5300,8 +5231,6 @@ msgid ""
 "your %(name)s file, as well as %(name)s tasks and notes in Outlook. Or\n"
 "your Pocket PC."
 msgstr ""
-"%(name)s在Windows和Mac OS X上内置SyncML客户端支持"
-"（前提是Mac具有Mac OS X 10.5或更高版本）。"
 
 #: taskcoachlib/help/__init__.py:488
 msgid ""
@@ -5310,16 +5239,12 @@ msgid ""
 "<a target=\"_blank\" href=\"http://www.taskcoach.org/\">taskcoach.org</a>,\n"
 "at the end of the Linux downloads section."
 msgstr ""
-"在Linux上，您必须自己安装Python的"
-"SyncML客户端绑定。有64位版本可用。"
 
 #: taskcoachlib/help/__init__.py:495
 msgid ""
 "This feature is optional and off by default. In order to turn it on,\n"
 "go to the preferences dialog and check it on the Features page."
 msgstr ""
-"此功能是可选的，默认关闭。要启用它，"
-"请转到SyncML首选项并选中'启用SyncML'。"
 
 #: taskcoachlib/help/__init__.py:498
 msgid ""
@@ -5330,8 +5255,6 @@ msgid ""
 "server\n"
 "you choose; some examples are:"
 msgstr ""
-"要设置SyncML，请在编辑/SyncML首选项中"
-"编辑SyncML首选项。填写服务器URL、用户名和密码。"
 
 #: taskcoachlib/help/__init__.py:506
 msgid ""
@@ -5346,8 +5269,6 @@ msgid ""
 "Each task file has its own client ID, so that two different task \n"
 "files will be considered different \"devices\" by the server."
 msgstr ""
-"每个任务文件都有自己的客户端ID，因此两个不同的任务"
-"文件将独立同步。"
 
 #: taskcoachlib/help/__init__.py:514
 msgid ""
@@ -5355,8 +5276,6 @@ msgid ""
 "type being vcalendar, some %(name)s features cannot be presented to the \n"
 "server."
 msgstr ""
-"一些限制是由于底层数据类型是vcalendar，"
-"某些功能不受支持。"
 
 #: taskcoachlib/help/__init__.py:518
 msgid "Task and category hierarchy are lost to the server."
@@ -5378,8 +5297,6 @@ msgid ""
 "\n"
 "arise."
 msgstr ""
-"冲突检测/解决系统是"
-"Funambol限制的变通方法。"
 
 #: taskcoachlib/help/__init__.py:525
 msgid "Probably some others..."
@@ -5411,8 +5328,6 @@ msgid ""
 "Microsoft Visual 8 runtime installed. You can download it on the\n"
 "<a target=\"_blank\" href=\"%s\"> Microsoft download site</a>."
 msgstr ""
-"如果您没有安装Microsoft Visual C++ 2008可再发行组件包，"
-"您可能会在Windows下遇到问题。"
 
 #: taskcoachlib/help/__init__.py:541
 msgid ""
@@ -5427,8 +5342,6 @@ msgid ""
 "not a \n"
 "problem, but takes a little more disk space."
 msgstr ""
-"启用SyncML后，删除任务或笔记实际上"
-"不会删除它，而是将其标记为已删除。"
 
 #: taskcoachlib/help/__init__.py:548
 msgid ""
@@ -5440,8 +5353,6 @@ msgid ""
 "previously, all those items will reappear, as the server\n"
 "doesn't know they're deleted."
 msgstr ""
-"在这种情况下，可以使用文件菜单中的"清除已删除项目"菜单项"
-"永久删除它们。"
 
 #: taskcoachlib/help/__init__.py:558
 msgid "iPhone, iPod Touch and iPad"
@@ -5462,8 +5373,6 @@ msgid ""
 "your computer, you'll be presented a page where you can download iTunes). \n"
 "It supports the following features:"
 msgstr ""
-"%(name)s有一个iPhone/iPod Touch/iPad伴侣应用，"
-"可在<a href="http://itunes.com/app/taskcoach/">Apple的App Store</a>上获得。"
 
 #: taskcoachlib/help/__init__.py:569
 msgid ""
@@ -5501,8 +5410,6 @@ msgid ""
 "There are some settings for the iPhone/iPod Touch/iPad app in the \n"
 "Settings application:"
 msgstr ""
-"您设备上的设置应用中有一些"
-"iPhone/iPod Touch/iPad应用的设置。"
 
 #: taskcoachlib/help/__init__.py:585
 msgid "Show completed: whether to show completed tasks."
@@ -5521,24 +5428,18 @@ msgid ""
 "Icon position: the LED icon may show up either on the \n"
 "left side or the right side of the screen."
 msgstr ""
-"图标位置：LED图标可以显示在任务的"
-"左侧或右侧。"
 
 #: taskcoachlib/help/__init__.py:590
 msgid ""
 "Compact mode: if this is enabled, the task list has smaller \n"
 "LEDs and doesn't show categories or dates."
 msgstr ""
-"紧凑模式：如果启用，任务列表有更小的"
-"LED并且不显示任务描述。"
 
 #: taskcoachlib/help/__init__.py:592
 msgid ""
 "Confirm complete: if enabled, a message box will pop up for \n"
 "confirmation when you mark a task complete by tapping its LED."
 msgstr ""
-"确认完成：如果启用，完成任务时"
-"会弹出消息框进行确认。"
 
 #: taskcoachlib/help/__init__.py:594
 msgid ""
@@ -5559,8 +5460,6 @@ msgid ""
 "synchronization\". Restart %(name)s. Now, in the preferences, choose the \n"
 "\"iPhone\" tab and fill in at least the password."
 msgstr ""
-"同步之前，您还必须在桌面上配置%(name)s；"
-"在首选项中，iPhone页面。"
 
 #: taskcoachlib/help/__init__.py:604
 msgid ""
@@ -5572,8 +5471,6 @@ msgid ""
 "identifying the computer it's running on. To customize this, you may\n"
 "change the \"Bonjour service name\" in the configuration."
 msgstr ""
-"当您在类别视图中点击"同步"按钮时，%(name)s"
-"将自动尝试查找正在运行的桌面实例。"
 
 #: taskcoachlib/help/__init__.py:612
 msgid ""
@@ -5619,8 +5516,6 @@ msgid ""
 "distribution \n"
 "(libavahi-compat-libdnssd1 on Ubuntu for instance)."
 msgstr ""
-"在Linux上，您必须安装并运行"
-"<a href="http://avahi.org/">Avahi</a>守护程序。"
 
 #: taskcoachlib/help/__init__.py:634
 msgid ""
@@ -5637,8 +5532,6 @@ msgid ""
 "target=\"_blank\">Get \n"
 "iTunes</a>."
 msgstr ""
-"您需要在计算机上安装iTunes才能浏览"
-"Apple的App Store。"
 
 #: taskcoachlib/help/__init__.py:641
 msgid "My computer doesn't appear in the list when trying to sync"
@@ -5649,8 +5542,6 @@ msgid ""
 "Check that your iPhone/iPod Touch is connected to the same network \n"
 "your computer is through WiFi."
 msgstr ""
-"检查您的iPhone/iPod Touch是否连接到"
-"您的计算机所连接的同一网络。"
 
 #: taskcoachlib/help/__init__.py:646
 msgid "The iPhone can't connect to my computer"
@@ -5669,8 +5560,6 @@ msgid ""
 "Format\">Todo.txt \n"
 "format</a> and then edit your tasks on your Android device."
 msgstr ""
-"不，%(name)s不适用于Android平台。但是，"
-"<a target="_blank" href="http://www.todotodo.com">Todo Todo</a>可以与%(name)s同步。"
 
 #: taskcoachlib/help/__init__.py:665
 msgid ""
@@ -5684,8 +5573,6 @@ msgid ""
 "Dropbox folder. %(name)s can import from and export to that todo.txt \n"
 "file."
 msgstr ""
-"Todo.txt是一个开源待办事项列表管理器，由Gina "
-"Trapani创建，在一个简单的文本文件中工作。"
 
 #: taskcoachlib/help/__init__.py:673
 msgid ""
@@ -5698,8 +5585,6 @@ msgid ""
 "importing),\n"
 "the Todo.txt file wins the conflict."
 msgstr ""
-"导出到Todo.txt时，%(name)s会在目标文件旁边"
-"创建另一个扩展名为.idmap的文件。"
 
 #: taskcoachlib/help/__init__.py:679
 msgid ""
@@ -5715,8 +5600,6 @@ msgid ""
 "modify\n"
 "or delete it."
 msgstr ""
-"提示：如果您将任务文件保存在Todo.txt Touch"
-"在Dropbox上创建的todo文件夹中，您可以将任务与Todo.txt Touch同步。"
 
 #: taskcoachlib/help/__init__.py:689
 msgid ""
@@ -5727,8 +5610,6 @@ msgid ""
 "parent tasks because Todo.txt allows tasks to belong to multiple projects, \n"
 "while %(name)s only allows one parent task per task."
 msgstr ""
-"%(name)s导入任务主题、计划开始日期、截止日期、完成"
-"日期、优先级和类别。"
 
 #: taskcoachlib/help/__init__.py:695
 msgid ""
@@ -5739,8 +5620,6 @@ msgid ""
 "parent\n"
 "item if any."
 msgstr ""
-"导入时，%(name)s尝试找到匹配的任务和"
-"类别，并在必要时更新它们。"
 
 #: taskcoachlib/help/__init__.py:702
 msgid ""
@@ -5749,8 +5628,6 @@ msgid ""
 "not\n"
 "exported."
 msgstr ""
-"%(name)s导出任务主题、计划开始日期、截止日期、完成"
-"日期、优先级和类别。"
 
 #: taskcoachlib/help/__init__.py:706
 msgid ""
@@ -5758,8 +5635,6 @@ msgid ""
 "dates, so the time part of start, due, and completion date/times is not\n"
 "exported."
 msgstr ""
-"%(name)s支持日期和时间，但Todo.txt只支持"
-"日期，因此时间信息会丢失。"
 
 #: taskcoachlib/help/__init__.py:710
 msgid ""
@@ -5770,8 +5645,6 @@ msgid ""
 "the\n"
 "todo.txt file."
 msgstr ""
-"默认的Todo.txt格式只支持计划开始日期和"
-"完成日期，不支持截止日期。"
 
 #: taskcoachlib/help/__init__.py:715
 msgid ""
@@ -5782,8 +5655,6 @@ msgid ""
 "26\n"
 "are not exported."
 msgstr ""
-"Todo.txt的优先级以字母形式表示（'A'-'Z'）。"
-"%(name)s具有数字优先级。"
 
 #: taskcoachlib/help/__init__.py:720
 msgid ""
@@ -5792,8 +5663,6 @@ msgid ""
 "Categories whose subject doesn't start with '+' or '@' are not exported. \n"
 "Subcategories are exported if their parent category is."
 msgstr ""
-"主题以'+'开头的类别作为项目导出。"
-"主题以'@'开头的类别作为上下文导出。"
 
 #: taskcoachlib/help/__init__.py:731
 msgid ""
@@ -5804,8 +5673,6 @@ msgid ""
 "\n"
 "current date."
 msgstr ""
-"模板是新任务的蓝图。目前，唯一可以"
-"模板化的任务属性是日期。"
 
 #: taskcoachlib/help/__init__.py:738
 msgid ""
@@ -5814,8 +5681,6 @@ msgid ""
 "and \n"
 "attachments are part of the template. Only categories are not saved."
 msgstr ""
-"可以通过选择一个任务（只有一个）并点击"
-""保存为模板"菜单项来创建模板。"
 
 #: taskcoachlib/help/__init__.py:742
 msgid ""
@@ -5826,8 +5691,6 @@ msgid ""
 "TaskCoach.ini \n"
 "is."
 msgstr ""
-"您也可以从预制模板文件"
-"（.tsktmpl）创建新模板；只需将其拖到任务列表上。"
 
 #: taskcoachlib/help/__init__.py:747
 msgid ""
@@ -5843,8 +5706,6 @@ msgid ""
 "and the \n"
 "due date by the current date plus one day."
 msgstr ""
-"要实例化任务模板，请使用"从模板新建任务""
-"菜单项。"
 
 #: taskcoachlib/help/__init__.py:755
 msgid ""
@@ -5854,8 +5715,6 @@ msgid ""
 "will become red if %(name)s cannot figure out what it means. Example\n"
 "dates:"
 msgstr ""
-"您也可以从模板编辑器（文件/编辑"
-"模板）添加模板，以及删除模板。"
 
 #: taskcoachlib/help/__init__.py:766
 msgid ""
@@ -5874,8 +5733,6 @@ msgid ""
 "other\n"
 "to create notebooks."
 msgstr ""
-"您可以拖放查看器来创建几乎任何您想要的"
-"用户界面布局。"
 
 #: taskcoachlib/help/__init__.py:778
 msgid ""
@@ -5884,8 +5741,6 @@ msgid ""
 "tabs \n"
 "next to eachother."
 msgstr ""
-"在编辑对话框中，您可以拖放标签页来重新排列"
-"顺序或创建新标签页。"
 
 #: taskcoachlib/help/__init__.py:782
 msgid ""
@@ -5899,16 +5754,12 @@ msgid ""
 "escape to cancel your changes. F2 is a keyboard shortcut for editing the \n"
 "subject."
 msgstr ""
-"任务、笔记和类别的主题和描述可以"
-"在不打开编辑器对话框的情况下编辑。"
 
 #: taskcoachlib/help/__init__.py:795
 msgid ""
 "%(name)s has several keyboard shortcuts, listed below. Keyboard \n"
 "shortcuts are not configurable at the moment."
 msgstr ""
-"%(name)s有几个键盘快捷键，如下所列。键盘"
-"快捷键不可配置。"
 
 #: taskcoachlib/help/__init__.py:799
 msgid "Ctrl-A"
@@ -6168,10 +6019,6 @@ msgid ""
 "<p>%(copyright)s</p>\n"
 "<p>%(license_notice_html)s</p>\n"
 msgstr ""
-"<h4>%(name)s - %(description)s</h4>"
-"<h5>版本 %(version)s, %(date)s</h5>"
-"<p>%(copyright)s</p>"
-"<p>%(website)s</p>"
 
 #: taskcoachlib/help/tips.py:26
 msgid ""
@@ -6442,8 +6289,6 @@ msgid ""
 "but no password is set. Please set a password in the\n"
 "iPhone section of the configuration and try again."
 msgstr ""
-"iPhone或iPod Touch尝试连接到Task Coach，"
-"但未设置密码。请在首选项中设置密码。"
 
 #: taskcoachlib/iphone/protocol.py:626
 msgid "Protocol version: %d"
@@ -6631,7 +6476,7 @@ msgstr ""
 #: taskcoachlib/mailer/thunderbird.py:248
 #: taskcoachlib/mailer/thunderbird.py:373
 msgid "Unrecognized URL scheme: \"%s\""
-msgstr "无法识别的URL方案：\"%s\""
+msgstr ""
 
 #: taskcoachlib/mailer/thunderbird.py:306
 msgid ""
@@ -6639,8 +6484,6 @@ msgid ""
 "to retrieve Thunderbird email message:\n"
 "%(reason)s"
 msgstr ""
-"无法打开到%(server)s:%(port)s的IMAP连接"
-"以检索Thunderbird消息。"
 
 #: taskcoachlib/mailer/thunderbird.py:325
 msgid "Please enter the domain for user %s"
@@ -6821,7 +6664,7 @@ msgstr "面板切换器"
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
 msgid "\"><b>"
-msgstr "\"><b>"
+msgstr ""
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
 msgid "</b>"
@@ -6829,7 +6672,7 @@ msgstr "</b>"
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
 msgid "<body bgcolor=\"#"
-msgstr "<body bgcolor=\""
+msgstr ""
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1180
 msgid "<p>"
