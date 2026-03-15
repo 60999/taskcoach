@@ -879,7 +879,7 @@ msgstr "选中标记"
 
 #: taskcoachlib/gui/artprovider.py:164
 msgid "Check marks"
-msgstr ""
+msgstr "选中标记"
 
 #: taskcoachlib/gui/artprovider.py:165
 msgid "Clock"
