@@ -564,6 +564,8 @@ class Application(object, metaclass=patterns.Singleton):
         from taskcoachlib.persistence import getDefaultTemplates
 
         template_dir = self.settings.pathToTemplatesDir()
+        if not os.path.exists(template_dir):
+            os.makedirs(template_dir, exist_ok=True)
         if (
             len(
                 [
