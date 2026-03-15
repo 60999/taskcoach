@@ -55,17 +55,19 @@ msgstr "%s文件错误"
 
 #: taskcoachlib/changes/sync.py:83
 msgid "Task Coach"
-msgstr ""
+msgstr "Task Coach"
 
 #: taskcoachlib/changes/sync.py:143 taskcoachlib/changes/sync.py:196
 msgid "\"%s\" became top-level because its parent was locally deleted."
-msgstr ""
+msgstr "\"%s\" 成为顶级任务，因为其父任务已在本地删除。"
 
 #: taskcoachlib/changes/sync.py:467
 msgid ""
 "Conflicts detected for \"%s\".\n"
 "The local version was used."
 msgstr ""
+"检测到 \"%s\" 的冲突。\n"
+"已使用本地版本。"
 
 #: taskcoachlib/command/attachmentCommands.py:28
 msgid "Edit location of attachments"
@@ -577,7 +579,7 @@ msgstr "保存错误"
 #: taskcoachlib/domain/attachment/attachment.py:168
 #: taskcoachlib/mailer/macmail.py:50 taskcoachlib/mailer/macmail.py:69
 msgid "Mail.app message"
-msgstr ""
+msgstr "Mail.app 邮件"
 
 #: taskcoachlib/domain/attachment/attachmentlist.py:24
 msgid "New attachment..."
@@ -6485,31 +6487,31 @@ msgstr ""
 
 #: taskcoachlib/persistence/csv/generator.py:41
 msgid "Period start date"
-msgstr ""
+msgstr "周期开始日期"
 
 #: taskcoachlib/persistence/csv/generator.py:41
 msgid "Period start time"
-msgstr ""
+msgstr "周期开始时间"
 
 #: taskcoachlib/persistence/csv/reader.py:58
 msgid "No subject"
-msgstr ""
+msgstr "无主题"
 
 #: taskcoachlib/persistence/xml/templates.py:8
 msgid "New task due today"
-msgstr ""
+msgstr "今日到期的新任务"
 
 #: taskcoachlib/persistence/xml/templates.py:10
 msgid "New task due tomorrow"
-msgstr ""
+msgstr "明日到期的新任务"
 
 #: taskcoachlib/render.py:50 taskcoachlib/thirdparty/smartdatetimectrl.py:1754
 msgid "%d days"
-msgstr ""
+msgstr "%d 天"
 
 #: taskcoachlib/render.py:51 taskcoachlib/thirdparty/smartdatetimectrl.py:1752
 msgid "1 day"
-msgstr ""
+msgstr "1 天"
 
 #: taskcoachlib/render.py:92
 msgid "Every %(frequency)d days"
