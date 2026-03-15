@@ -545,6 +545,14 @@ class ViewViewerMenu(Menu):
                 **kwargs
             ),
             ViewViewer(
+                menu_text=_("&Kanban board"),
+                help_text=_(
+                    "Open a new tab with a viewer that displays tasks in a Kanban board"
+                ),
+                viewerClass=taskcoachlib.gui.viewer.getKanbanViewer(),
+                **kwargs
+            ),
+            ViewViewer(
                 menu_text=_("Task &statistics"),
                 help_text=_(
                     "Open a new tab with a viewer that displays task statistics"

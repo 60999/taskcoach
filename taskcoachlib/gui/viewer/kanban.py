@@ -613,7 +613,7 @@ class KanbanViewer(base.Viewer):
     """看板视图，支持泳道和过滤。"""
     
     defaultTitle = _("Kanban board")
-    defaultBitmap = "kanban"
+    defaultBitmap = "nuvola_apps_kchart"
     
     def __init__(self, parent, taskFile, settings, *args, **kwargs):
         self._board = None

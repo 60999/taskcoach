@@ -25,6 +25,18 @@ from .task import (
     HierarchicalCalendarViewer,
 )
 
+# KanbanViewer is imported lazily to avoid triggering i18n initialization
+# before wxApp is created. Use getKanbanViewer() to access it.
+KanbanViewer = None
+
+def getKanbanViewer():
+    """Lazily import and return KanbanViewer class."""
+    global KanbanViewer
+    if KanbanViewer is None:
+        from .kanban import KanbanViewer as _KanbanViewer
+        KanbanViewer = _KanbanViewer
+    return KanbanViewer
+
 # SquareTaskViewer requires optional squaremap dependency
 try:
     from .task import SquareTaskViewer
