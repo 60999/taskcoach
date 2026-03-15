@@ -1156,29 +1156,29 @@ msgstr "没有图标"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:31
 msgid "File"
-msgstr ""
+msgstr "文件"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:32
 msgid "Full path"
-msgstr ""
+msgstr "完整路径"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:34
 #: taskcoachlib/widgets/hcalendarconfig.py:56
 msgid "Date"
-msgstr ""
+msgstr "日期"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:36
 msgid "Restore"
-msgstr ""
+msgstr "恢复"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:52
 #: taskcoachlib/widgets/dialog.py:81
 msgid "Close"
-msgstr ""
+msgstr "关闭"
 
 #: taskcoachlib/gui/dialog/backupmanager.py:111
 msgid "Choose the restoration destination"
-msgstr ""
+msgstr "选择恢复目标"
 
 #: taskcoachlib/gui/dialog/developer_message.py:32
 msgid "Message from the %s developers"
@@ -1441,7 +1441,7 @@ msgstr "开始"
 #: taskcoachlib/thirdparty/smartdatetimectrl.py:1647
 #: taskcoachlib/widgets/calendarconfig.py:62
 msgid "Week(s)"
-msgstr ""
+msgstr "周"
 
 #: taskcoachlib/gui/dialog/editor.py:1219
 #: taskcoachlib/thirdparty/smartdatetimectrl.py:1648
@@ -1568,11 +1568,11 @@ msgstr "计划每个下次循环都基于"
 
 #: taskcoachlib/gui/dialog/entry.py:476
 msgid "previous planned start and/or due date"
-msgstr ""
+msgstr "上一次计划开始和/或到期日期"
 
 #: taskcoachlib/gui/dialog/entry.py:477
 msgid "last completion date"
-msgstr ""
+msgstr "上次完成日期"
 
 #: taskcoachlib/gui/dialog/entry.py:522
 msgid "day(s),"
@@ -1727,11 +1727,11 @@ msgstr "每次修改后自动保存"
 
 #: taskcoachlib/gui/dialog/preferences.py:352
 msgid "Auto load when the file changes on disk"
-msgstr ""
+msgstr "文件在磁盘上更改时自动加载"
 
 #: taskcoachlib/gui/dialog/preferences.py:354
 msgid "Smart filesystem monitoring"
-msgstr ""
+msgstr "智能文件系统监控"
 
 #: taskcoachlib/gui/dialog/preferences.py:355
 msgid ""
@@ -6547,7 +6547,7 @@ msgstr "其它任何年度"
 
 #: taskcoachlib/render.py:144
 msgid "Yesterday"
-msgstr ""
+msgstr "昨天"
 
 #: taskcoachlib/render.py:284
 msgid "now"
@@ -6670,58 +6670,58 @@ msgstr ""
 
 #: taskcoachlib/widgets/calendarconfig.py:56
 msgid "Kind of period displayed and its count"
-msgstr ""
+msgstr "显示的周期类型及其数量"
 
 #: taskcoachlib/widgets/calendarconfig.py:62
 #: taskcoachlib/widgets/hcalendarconfig.py:65
 msgid "Month"
-msgstr ""
+msgstr "月"
 
 #: taskcoachlib/widgets/calendarconfig.py:75
 msgid "Calendar orientation"
-msgstr ""
+msgstr "日历方向"
 
 #: taskcoachlib/widgets/calendarconfig.py:77
 msgid "Horizontal"
-msgstr ""
+msgstr "水平"
 
 #: taskcoachlib/widgets/calendarconfig.py:77
 msgid "Vertical"
-msgstr ""
+msgstr "垂直"
 
 #: taskcoachlib/widgets/calendarconfig.py:84
 msgid "Which tasks to display"
-msgstr ""
+msgstr "显示哪些任务"
 
 #: taskcoachlib/widgets/calendarconfig.py:86
 msgid "Tasks with a planned start date and a due date"
-msgstr ""
+msgstr "有计划开始日期和到期日期的任务"
 
 #: taskcoachlib/widgets/calendarconfig.py:87
 msgid "Tasks with a planned start date"
-msgstr ""
+msgstr "有计划开始日期的任务"
 
 #: taskcoachlib/widgets/calendarconfig.py:88
 msgid "Tasks with a due date"
-msgstr ""
+msgstr "有到期日期的任务"
 
 #: taskcoachlib/widgets/calendarconfig.py:89
 msgid "All tasks"
-msgstr ""
+msgstr "所有任务"
 
 #: taskcoachlib/widgets/calendarconfig.py:89
 msgid "All tasks, except unplanned tasks"
-msgstr ""
+msgstr "所有任务，除未计划任务外"
 
 #: taskcoachlib/widgets/calendarconfig.py:99
 #: taskcoachlib/widgets/hcalendarconfig.py:73
 msgid "Draw a line showing the current time"
-msgstr ""
+msgstr "绘制显示当前时间的线"
 
 #: taskcoachlib/widgets/calendarconfig.py:108
 #: taskcoachlib/widgets/hcalendarconfig.py:81
 msgid "Color used to highlight the current day"
-msgstr ""
+msgstr "用于突出显示当前日期的颜色"
 
 #: taskcoachlib/widgets/dialog.py:166
 msgid "All files (*.*)|*"
