@@ -1715,6 +1715,7 @@ msgstr "此设置在 %s 重启后才能起效"
 msgid ""
 "This setting can be overridden for individual tasks\n"
 "in the task edit dialog."
+msgstr "此设置可以在任务编辑对话框中为单个任务覆盖。"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/preferences.py:344
@@ -1953,6 +1954,7 @@ msgstr "空闲时间通告"
 msgid ""
 "If there is no user input for this amount of time\n"
 "(in minutes), %(name)s will ask what to do about current efforts."
+msgstr "如果用户在此时间内（以分钟计）没有输入，%(name)s 将询问如何处理当前的工作记录。"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/preferences.py:581
@@ -1964,6 +1966,8 @@ msgid ""
 "Display one hour, fifteen minutes as 1.25 instead of 1:15\n"
 "This is useful when creating invoices."
 msgstr ""
+"将一小时十五分钟显示为1.25而不是1:15"
+"这在创建发票时很有用。"
 
 #: taskcoachlib/gui/dialog/preferences.py:585
 msgid ""
@@ -2075,6 +2079,11 @@ msgid ""
 "\"Start of working day\" and \"End of working day\" use the working day as "
 "set in the Features tab of this preferences dialog."
 msgstr ""
+"新任务以\"预设\"日期和时间填充并选中。\"建议\"的日期和时间已填充但未选中。\n"
+"\n"
+"\"一天开始\"是午夜，\"一天结束\"是午夜前一刻。使用这些时，任务查看器隐藏时间只显示日期。\n"
+"\n"
+"\"工作日开始\"和\"工作日结束\"使用此首选项对话框功能选项卡中设置的工作日。"
 
 #: taskcoachlib/gui/dialog/preferences.py:661
 msgid "Task reminders"
@@ -2927,6 +2936,7 @@ msgstr "保存(&S)\tCtrl+S"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:147
 msgid "Merge &disk changes\tShift-Ctrl-M"
+msgstr "合并磁盘更改(&D)	Shift-Ctrl-M"
 msgstr ""
 
 #: taskcoachlib/gui/uicommand/uicommand.py:161
@@ -4753,6 +4763,9 @@ msgid ""
 "Fixed fee: the amount of money earned with the task \n"
 "regardless of the time spent."
 msgstr ""
+"固定费用：无论花费多少时间\n"
+"任务赚取的金额。"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:196 taskcoachlib/help/__init__.py:273
 msgid "The following properties are calculated from the properties above:"
@@ -4766,6 +4779,9 @@ msgstr "剩余天数：距离截止日期的天数。"
 msgid ""
 "Dependents: other tasks that can be started when the \n"
 "prerequisite task has been completed."
+msgstr ""
+"依赖项：前置任务完成后\n"
+"可以开始的其他任务。"
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:201
@@ -4793,6 +4809,9 @@ msgid ""
 "Inactive: the task has not been started and/or not all \n"
 "prerequisite tasks have been completed;"
 msgstr ""
+"非活动：任务尚未开始和/或并非所有\n"
+"前置任务都已完成；"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:212
 msgid "Completed: the task has been completed."
@@ -4811,11 +4830,17 @@ msgid ""
 "Due soon: the due date is soon (what 'soon' is, can be \n"
 "changed in the preferences);"
 msgstr ""
+"即将到期：截止日期很快（什么是'很快'\n"
+"可以在首选项中更改）；"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:219
 msgid ""
 "Late: the planned start is in the past and the task has \n"
 "not been started;"
+msgstr ""
+"迟到：计划开始在过去但任务\n"
+"尚未开始；"
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:221
@@ -5076,6 +5101,9 @@ msgid ""
 "A single user, opening the task file on several computers (work,\n"
 "home, laptop)."
 msgstr ""
+"单个用户，在多台计算机上打开任务文件（工作、\n"
+"家庭、笔记本电脑）。"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:399
 msgid "Several users working on the same task file."
@@ -5240,6 +5268,9 @@ msgid ""
 "The database names are pretty standard; the default values \n"
 "should work."
 msgstr ""
+"数据库名称相当标准；默认值\n"
+"应该可以工作。"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:509
 msgid ""
@@ -5283,6 +5314,9 @@ msgstr "可能还有其他..."
 msgid ""
 "The SyncML menu items are only present if your platform is \n"
 "supported. Currently supported platforms are:"
+msgstr ""
+"SyncML菜单项仅在您的平台\n"
+"受支持时才存在。目前支持的平台是："
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:532
@@ -5353,6 +5387,7 @@ msgstr ""
 msgid ""
 "Basic task attributes: subject, description, dates (with \n"
 "recurrence)..."
+msgstr "基本任务属性：主题、描述、日期（带重复）..."
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:571
@@ -5394,6 +5429,9 @@ msgid ""
 "Show inactive: whether to show inactive tasks (planned start date \n"
 "in the future)."
 msgstr ""
+"显示非活动：是否显示非活动任务（计划开始日期\n"
+"在未来）。"
+msgstr ""
 
 #: taskcoachlib/help/__init__.py:588
 msgid ""
@@ -5417,6 +5455,9 @@ msgstr ""
 msgid ""
 "# days due soon: How many days in the future is \n"
 "considered \"soon\"."
+msgstr ""
+"即将到期天数：未来多少天\n"
+"被认为是"很快"。"
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:597
@@ -5484,6 +5525,9 @@ msgstr ""
 msgid ""
 "I can't seem to find the iPhone/iPod Touch app on Apple's \n"
 "website"
+msgstr ""
+"我似乎在Apple网站上\n"
+"找不到iPhone/iPod Touch应用"
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:637
@@ -5681,6 +5725,9 @@ msgstr ""
 msgid ""
 "Please note that this system is not localized; you must enter\n"
 "the dates in english."
+msgstr ""
+"请注意，此系统未本地化；您必须\n"
+"以英语输入日期。"
 msgstr ""
 
 #: taskcoachlib/help/__init__.py:773
@@ -6419,6 +6466,9 @@ msgid ""
 "Malformed Thunderbird internal ID:\n"
 "%s. Please file a bug report."
 msgstr ""
+"Thunderbird内部ID格式错误：\n"
+"%s。请提交错误报告。"
+msgstr ""
 
 #: taskcoachlib/mailer/thunderbird.py:189
 msgid ""
@@ -6426,10 +6476,15 @@ msgid ""
 "%s.\n"
 "Please file a bug report."
 msgstr ""
+"找不到ID的目录\n"
+"%s。\n"
+"请提交错误报告。"
+msgstr ""
 
 #: taskcoachlib/mailer/thunderbird.py:248
 #: taskcoachlib/mailer/thunderbird.py:373
 msgid "Unrecognized URL scheme: \"%s\""
+msgstr "无法识别的URL方案："%s""
 msgstr ""
 
 #: taskcoachlib/mailer/thunderbird.py:306
@@ -6446,6 +6501,9 @@ msgstr "请输入用户%s的域"
 #: taskcoachlib/mailer/thunderbird.py:351
 msgid ""
 "Could not select inbox \"%s\"\n"
+"(%s)"
+msgstr ""
+"无法选择收件箱"%s"\n"
 "(%s)"
 msgstr ""
 
@@ -6562,11 +6620,17 @@ msgid ""
 "will be a refresh from server. All local items will\n"
 "be deleted. Do you wish to continue?"
 msgstr ""
+"将从服务器刷新。所有本地项目将\n"
+"被删除。您要继续吗？"
+msgstr ""
 
 #: taskcoachlib/syncml/basesource.py:53
 msgid ""
 "will be a refresh from client. All remote items will\n"
 "be deleted. Do you wish to continue?"
+msgstr ""
+"将从客户端刷新。所有远程项目将\n"
+"被删除。您要继续吗？"
 msgstr ""
 
 #: taskcoachlib/syncml/sync.py:102
@@ -6579,6 +6643,11 @@ msgid ""
 "\n"
 "\n"
 msgstr ""
+"正在同步。请稍候。\n"
+"\n"
+"\n"
+""
+msgstr ""
 
 #: taskcoachlib/syncml/sync.py:207
 msgid ""
@@ -6586,11 +6655,18 @@ msgid ""
 "%d items updated.\n"
 "%d items deleted."
 msgstr ""
+"添加了%d个项目。\n"
+"更新了%d个项目。\n"
+"删除了%d个项目。"
+msgstr ""
 
 #: taskcoachlib/syncml/sync.py:213
 msgid ""
 "An error occurred in the synchronization.\n"
 "Error code: %d; message: %s"
+msgstr ""
+"同步过程中发生错误。\n"
+"错误代码：%d；消息：%s"
 msgstr ""
 
 #: taskcoachlib/syncml/sync.py:218
@@ -6603,6 +6679,7 @@ msgstr "面板切换器"
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
 msgid "\"><b>"
+msgstr ""><b>"
 msgstr ""
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
@@ -6611,6 +6688,7 @@ msgstr "</b>"
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1177
 msgid "<body bgcolor=\"#"
+msgstr "<body bgcolor="#"
 msgstr ""
 
 #: taskcoachlib/thirdparty/aui/aui_switcherdialog.py:1180
