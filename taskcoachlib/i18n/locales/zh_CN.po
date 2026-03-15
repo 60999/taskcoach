@@ -6988,3 +6988,37 @@ msgstr "已达到WIP限制"
 
 msgid "Cannot add more tasks to this column"
 msgstr "无法向此列添加更多任务"
+
+# Additional Kanban translations
+msgid "Edit task"
+msgstr "编辑任务"
+
+msgid "Delete task"
+msgstr "删除任务"
+
+msgid "No swimlane"
+msgstr "无泳道"
+
+msgid "Add task"
+msgstr "添加任务"
+
+msgid "Default board"
+msgstr "默认看板"
+
+msgid "High priority"
+msgstr "高优先级"
+
+msgid "Normal"
+msgstr "普通"
+
+msgid "Enter board name:"
+msgstr "输入看板名称："
+
+msgid "New board"
+msgstr "新建看板"
+
+msgid "High"
+msgstr "高"
+
+msgid "Low"
+msgstr "低"
