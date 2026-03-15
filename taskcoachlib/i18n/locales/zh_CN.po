@@ -7033,3 +7033,6 @@ msgstr "高"
 
 msgid "Low"
 msgstr "低"
+
+msgid "Kanban board"
+msgstr "看板视图"
