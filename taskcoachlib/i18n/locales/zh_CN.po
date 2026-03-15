@@ -6836,3 +6836,155 @@ msgstr "打开URL错误"
 
 #~ msgid "&Delete\tDEL"
 #~ msgstr "删除 (&D) \tDEL"
+
+# Kanban board translations
+msgid "&Kanban board"
+msgstr "看板视图(&K)"
+
+msgid "Open a new tab with a viewer that displays tasks in a Kanban board"
+msgstr "打开一个新标签页，以看板视图显示任务"
+
+# Board column translations
+msgid "To do"
+msgstr "待办"
+
+msgid "In progress"
+msgstr "进行中"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "High"
+msgstr "高"
+
+msgid "Medium"
+msgstr "中"
+
+msgid "Low"
+msgstr "低"
+
+# User management translations
+msgid "New User"
+msgstr "新建用户"
+
+msgid "Edit User"
+msgstr "编辑用户"
+
+msgid "Username:"
+msgstr "用户名："
+
+msgid "Email:"
+msgstr "邮箱："
+
+msgid "Display Name:"
+msgstr "显示名称："
+
+msgid "Password:"
+msgstr "密码："
+
+msgid "Confirm Password:"
+msgstr "确认密码："
+
+msgid "New Password:"
+msgstr "新密码："
+
+msgid "Confirm New Password:"
+msgstr "确认新密码："
+
+msgid "Active"
+msgstr "激活"
+
+msgid "Superuser"
+msgstr "超级用户"
+
+msgid "Username is required."
+msgstr "用户名是必填项。"
+
+msgid "Invalid email format."
+msgstr "邮箱格式无效。"
+
+msgid "Password is required for new user."
+msgstr "新用户必须设置密码。"
+
+msgid "Passwords do not match."
+msgstr "密码不匹配。"
+
+# Organization translations
+msgid "New Organization"
+msgstr "新建组织"
+
+msgid "Edit Organization"
+msgstr "编辑组织"
+
+msgid "Name:"
+msgstr "名称："
+
+msgid "Description:"
+msgstr "描述："
+
+# Team translations
+msgid "New Team"
+msgstr "新建团队"
+
+msgid "Edit Team"
+msgstr "编辑团队"
+
+# Invitation translations
+msgid "Invite User"
+msgstr "邀请用户"
+
+msgid "Send Invite"
+msgstr "发送邀请"
+
+msgid "Role:"
+msgstr "角色："
+
+msgid "Admin"
+msgstr "管理员"
+
+msgid "Member"
+msgstr "成员"
+
+msgid "Guest"
+msgstr "访客"
+
+# Board management
+msgid "New Board"
+msgstr "新建看板"
+
+msgid "Edit Board"
+msgstr "编辑看板"
+
+msgid "Delete Board"
+msgstr "删除看板"
+
+msgid "Board name:"
+msgstr "看板名称："
+
+# Swimlane
+msgid "Swimlane"
+msgstr "泳道"
+
+msgid "Add Swimlane"
+msgstr "添加泳道"
+
+msgid "Remove Swimlane"
+msgstr "移除泳道"
+
+# WIP Limit
+msgid "WIP Limit:"
+msgstr "WIP限制："
+
+msgid "Work In Progress Limit"
+msgstr "进行中工作数量限制"
+
+# Filter
+msgid "Filter tasks..."
+msgstr "过滤任务..."
+
+# Warnings
+msgid "WIP limit reached"
+msgstr "已达到WIP限制"
+
+msgid "Cannot add more tasks to this column"
+msgstr "无法向此列添加更多任务"
