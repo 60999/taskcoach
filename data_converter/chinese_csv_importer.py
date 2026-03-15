@@ -512,9 +512,46 @@ class ChineseCSVImporter:
             desc_elem = ET.SubElement(elem, "description")
             desc_elem.text = task["description"]
         
+        if task.get("time_spent", 0) > 0:
+            effort_elem = self._create_effort_element(task)
+            elem.append(effort_elem)
+        
         for child in task.get("children", []):
             child_elem = self._create_task_element(child)
             elem.append(child_elem)
+        
+        return elem
+    
+    def _create_effort_element(self, task: dict) -> ET.Element:
+        """
+        创建工时记录XML元素。
+        
+        参数:
+            task: 任务字典
+            
+        返回:
+            XML元素
+        """
+        time_spent = task.get("time_spent", 0)
+        
+        effort_id = str(uuid.uuid4())
+        
+        creation_dt = task.get("creation_datetime")
+        if creation_dt:
+            end_time = creation_dt
+        else:
+            end_time = datetime.now()
+        
+        start_time = end_time
+        if time_spent > 0:
+            from datetime import timedelta
+            start_time = end_time - timedelta(seconds=time_spent)
+        
+        elem = ET.Element("effort")
+        elem.set("id", effort_id)
+        elem.set("status", "1")
+        elem.set("start", start_time.strftime("%Y-%m-%d %H:%M:%S"))
+        elem.set("stop", end_time.strftime("%Y-%m-%d %H:%M:%S"))
         
         return elem
     
