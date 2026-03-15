@@ -5983,6 +5983,7 @@ msgid ""
 "prevent them, bugs do happen. So, backing up your work on a regular basis is "
 "strongly advised."
 msgstr ""
+"%(name)s 正在积极开发中。虽然 %(name)s 开发者努力防止错误，但问题仍可能发生。因此，强烈建议您定期备份工作。"
 
 #: taskcoachlib/help/tips.py:27
 msgid ""
@@ -5990,6 +5991,7 @@ msgid ""
 "fellow users, discuss and request features and complain about bugs. Go to "
 "%(url)s and join today!"
 msgstr ""
+"%(name)s 有一个邮件列表，您可以在那里与其他用户讨论 %(name)s 的使用，讨论和请求功能，以及报告错误。访问 %(url)s 立即加入！"
 
 #: taskcoachlib/help/tips.py:28
 msgid ""
@@ -5998,6 +6000,7 @@ msgid ""
 "Select 'Edit' -> 'Undo' and 'Edit' -> 'Redo' to go backwards and forwards "
 "through your edit history."
 msgstr ""
+"%(name)s 具有无限撤销和重做功能。您所做的任何更改，无论是编辑任务描述还是删除工作记录，都可以撤销。选择「编辑」->「撤销」和「编辑」->「重做」来浏览您的编辑历史。"
 
 #: taskcoachlib/help/tips.py:29
 msgid ""
@@ -6007,6 +6010,7 @@ msgid ""
 "helping with the translation of %(name)s. Visit %(url)s for more information "
 "about how you can help."
 msgstr ""
+"%(name)s 支持多种不同的语言。选择「编辑」->「首选项」查看您的语言是否在其中。如果您的语言不可用或翻译需要改进，请考虑帮助翻译 %(name)s。访问 %(url)s 了解更多关于如何帮助的信息。"
 
 #: taskcoachlib/help/tips.py:30
 msgid ""
@@ -6014,12 +6018,14 @@ msgid ""
 "becomes a link. Clicking on the link will open the URL in your default web "
 "browser."
 msgstr ""
+"如果您在任务或工作描述中输入 URL（例如 %(url)s），它会变成一个链接。点击链接将在您的默认网络浏览器中打开该 URL。"
 
 #: taskcoachlib/help/tips.py:31
 msgid ""
 "You can drag and drop tasks in the tree view to rearrange parent-child "
 "relationships between tasks. The same goes for categories."
 msgstr ""
+"您可以在树形视图中拖放任务来重新排列任务之间的父子关系。分类也是如此。"
 
 #: taskcoachlib/help/tips.py:32
 msgid ""
@@ -6028,12 +6034,14 @@ msgid ""
 "files over a collapsed task (the boxed + sign) in the tree view will expand "
 "the task to show its subtasks."
 msgstr ""
+"您可以从文件浏览器拖放文件到任务上以创建附件。将文件拖到标签页上会显示相应的页面，将文件拖到树形视图中折叠的任务（带方框的 + 号）上会展开任务以显示其子任务。"
 
 #: taskcoachlib/help/tips.py:33
 msgid ""
 "You can create any viewer layout you want by dragging and dropping the tabs. "
 "The layout is saved and reused in the next session."
 msgstr ""
+"您可以通过拖放标签页来创建任何您想要的查看器布局。布局会被保存并在下次会话中重用。"
 
 #: taskcoachlib/help/tips.py:34
 msgid ""
@@ -6042,6 +6050,7 @@ msgid ""
 "be printed, if the current view shows effort grouped by month, that will be "
 "printed. The same goes for visible columns, sort order, filtered tasks, etc."
 msgstr ""
+"当您选择「文件」->「打印」时实际打印的内容取决于当前视图。如果当前视图显示任务列表，将打印任务列表；如果当前视图显示按月分组的工作，将打印该内容。可见列、排序顺序、过滤任务等也是如此。"
 
 #: taskcoachlib/help/tips.py:35
 msgid ""
@@ -6050,28 +6059,30 @@ msgid ""
 "Right-click a column header to hide that column or make additional columns "
 "visible."
 msgstr ""
+"左键点击列标题可按该列排序。再次点击列标题可将排序顺序从升序更改为降序，反之亦然。右键点击列标题可隐藏该列或显示其他列。"
 
 #: taskcoachlib/help/tips.py:36
 msgid ""
 "You can create a template from a task in order to reduce typing when "
 "repetitive patterns emerge."
 msgstr ""
+"您可以从任务创建模板，以在出现重复模式时减少输入。"
 
 #: taskcoachlib/help/tips.py:37
 msgid "Ctrl-Tab switches between tabs in edit dialogs."
-msgstr ""
+msgstr "Ctrl-Tab 在编辑对话框的标签页之间切换。"
 
 #: taskcoachlib/help/tips.py:63
 msgid "Tip of the day"
-msgstr ""
+msgstr "每日提示"
 
 #: taskcoachlib/help/tips.py:74
 msgid "Next tip"
-msgstr ""
+msgstr "下一条提示"
 
 #: taskcoachlib/help/tips.py:92
 msgid "Show tips on startup"
-msgstr ""
+msgstr "启动时显示提示"
 
 #: taskcoachlib/help/uicommand.py:26
 msgid "Browse for files to add as attachment to the selected item(s)"
