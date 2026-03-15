@@ -7028,11 +7028,5 @@ msgstr "输入看板名称："
 msgid "New board"
 msgstr "新建看板"
 
-msgid "High"
-msgstr "高"
-
-msgid "Low"
-msgstr "低"
-
 msgid "Kanban board"
 msgstr "看板视图"
