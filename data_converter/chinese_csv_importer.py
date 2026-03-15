@@ -577,11 +577,16 @@ class ChineseCSVImporter:
             desc_elem.text = task["description"]
         
         if task.get("notes"):
-            notes_elem = ET.SubElement(elem, "notes")
-            notes_elem.text = task["notes"]
+            note_elem = ET.SubElement(elem, "note")
+            note_elem.set("id", str(uuid.uuid4()))
+            note_elem.set("status", "1")
+            note_elem.set("subject", "")
+            desc_elem = ET.SubElement(note_elem, "description")
+            desc_elem.text = task["notes"]
         
         if task.get("recurrence"):
-            elem.set("recurrence", task["recurrence"])
+            rec_elem = ET.SubElement(elem, "recurrence")
+            rec_elem.set("unit", task["recurrence"])
         
         if task.get("time_spent", 0) > 0:
             effort_elem = self._create_effort_element(task)
