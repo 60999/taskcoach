@@ -57,3 +57,5 @@ TaskCoach-1.4.6.zip
 output.tsk.delta
 output.tsk
 output.tsk.lock
+# Trae IDE 配置目录
+.trae/
