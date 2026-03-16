@@ -7255,3 +7255,149 @@ msgstr "新建看板"
 
 msgid "Kanban board"
 msgstr "看板视图"
+
+# Common UI strings - missing translations
+msgid "View"
+msgstr "视图"
+
+msgid "New"
+msgstr "新建"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save As"
+msgstr "另存为"
+
+msgid "Print"
+msgstr "打印"
+
+msgid "Exit"
+msgstr "退出"
+
+msgid "Select All"
+msgstr "全选"
+
+msgid "Mark completed"
+msgstr "标记完成"
+
+msgid "Mark active"
+msgstr "标记活动"
+
+msgid "Start date"
+msgstr "开始日期"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Clear"
+msgstr "清除"
+
+# Team menu translations
+msgid "Team"
+msgstr "团队"
+
+msgid "Users"
+msgstr "用户"
+
+msgid "Organizations"
+msgstr "组织"
+
+msgid "Assign"
+msgstr "分配"
+
+msgid "Members"
+msgstr "成员"
+
+msgid "Manage Users"
+msgstr "管理用户"
+
+msgid "Manage Teams"
+msgstr "管理团队"
+
+msgid "Manage Organizations"
+msgstr "管理组织"
+
+msgid "Assign Task"
+msgstr "分配任务"
+
+msgid "View Team Tasks"
+msgstr "查看团队任务"
+
+msgid "New User"
+msgstr "新建用户"
+
+msgid "Edit User"
+msgstr "编辑用户"
+
+msgid "Delete User"
+msgstr "删除用户"
+
+msgid "User name"
+msgstr "用户名"
+
+msgid "Email"
+msgstr "邮箱"
+
+msgid "Team name"
+msgstr "团队名称"
+
+msgid "Team members"
+msgstr "团队成员"
+
+msgid "Organization name"
+msgstr "组织名称"
+
+msgid "Teams"
+msgstr "团队"
+
+msgid "Add User"
+msgstr "添加用户"
+
+msgid "Add Team"
+msgstr "添加团队"
+
+msgid "Add Organization"
+msgstr "添加组织"
+
+msgid "Select team members"
+msgstr "选择团队成员"
+
+msgid "Available users"
+msgstr "可用用户"
+
+msgid "Selected members"
+msgstr "已选成员"
+
+msgid "Assign to"
+msgstr "分配给"
+
+msgid "Unassign"
+msgstr "取消分配"
+
+msgid "Task assigned to"
+msgstr "任务已分配给"
+
+msgid "Assigned tasks"
+msgstr "已分配任务"
+
+msgid "My tasks"
+msgstr "我的任务"
+
+msgid "All tasks"
+msgstr "所有任务"
+
+msgid "Filter by assignee"
+msgstr "按负责人筛选"
+
+msgid "Show unassigned only"
+msgstr "仅显示未分配"
+
+msgid "Show my tasks only"
+msgstr "仅显示我的任务"

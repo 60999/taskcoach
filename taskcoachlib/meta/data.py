@@ -203,7 +203,7 @@ languages = {
     "Breton": ("br", False),
     "Bulgarian": ("bg", False),
     "Catalan": ("ca", False),
-    "Chinese (Simplified)": ("zh_CN", False),
+    "Chinese (Simplified)": ("zh_CN", True),
     "Chinese (Traditional)": ("zh_TW", False),
     "Czech": ("cs", True),
     "Danish": ("da", False),
