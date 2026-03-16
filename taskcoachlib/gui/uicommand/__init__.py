@@ -21,3 +21,16 @@ from .settings_uicommand import UIRadioCommand, UICheckCommand
 from .uicommand import *
 from .uicommand import Separator, Spacer, DisabledLabel, SubMenu
 from .uicommandcontainer import UICommandContainerMixin
+from .team_uicommand import (
+    ManageUsersUICommand,
+    ManageTeamsUICommand,
+    ManageOrganizationsUICommand,
+    AssignTaskUICommand,
+    ViewTeamTasksUICommand,
+)
+
+ManageUsers = ManageUsersUICommand
+ManageTeams = ManageTeamsUICommand
+ManageOrganizations = ManageOrganizationsUICommand
+AssignTask = AssignTaskUICommand
+ViewTeamTasks = ViewTeamTasksUICommand

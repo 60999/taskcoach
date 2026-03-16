@@ -256,6 +256,14 @@ class MainMenu(wx.MenuBar):
                 ActionMenu(mainwindow, settings, taskFile, viewerContainer),
                 _("&Actions"),
             ),
+            (
+                ActionMenu(mainwindow, settings, taskFile, viewerContainer),
+                _("&Actions"),
+            ),
+            (
+                TeamMenu(mainwindow, settings, taskFile, viewerContainer),
+                _("&Team"),
+            ),
             (HelpMenu(mainwindow, settings, iocontroller), _("&Help")),
         ]:
             self.Append(menu, text)
@@ -830,6 +838,20 @@ class TaskPriorityMenu(Menu):
             uicommand.TaskMinPriority(taskList=task_list, viewer=viewer),
         )
 
+
+class TeamMenu(Menu):
+    """团队协作菜单。"""
+    
+    def __init__(self, mainwindow, settings, taskFile, viewerContainer):
+        super().__init__(mainwindow)
+        self.appendUICommands(
+            uicommand.ManageUsers(settings=settings, taskFile=taskFile),
+            uicommand.ManageTeams(settings=settings, taskFile=taskFile),
+            uicommand.ManageOrganizations(settings=settings, taskFile=taskFile),
+            None,
+            uicommand.AssignTask(settings=settings, taskFile=taskFile, viewer=viewerContainer),
+            uicommand.ViewTeamTasks(settings=settings, taskFile=taskFile),
+        )
 
 
 class HelpMenu(Menu):
