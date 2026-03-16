@@ -8464,44 +8464,54 @@ msgid "secs"
 msgstr "秒"
 
 
+
+
 # Missing multi-line translations from preferences.py
-msgid "In effort dialogs where seconds are shown, %(name)s will
-"
+msgid ""
+"In effort dialogs where seconds are shown, %(name)s will\n"
 "suggest second values using this setting."
-msgstr "在显示秒的花费对话框中，%(name)s将使用此设置建议秒值。"
+msgstr ""
+"在显示秒的花费对话框中，%(name)s将使用此设置建议秒值。"
 
-msgid "Not yet implemented. Future: row height in tree/list views
-"
+msgid ""
+"Not yet implemented. Future: row height in tree/list views\n"
 "will scale with this setting."
-msgstr "尚未实现。未来：树/列表视图中的行高将根据此设置进行缩放。"
+msgstr ""
+"尚未实现。未来：树/列表视图中的行高将根据此设置进行缩放。"
 
-msgid "Note: Working hours are not used for hour suggestions when
-"
+msgid ""
+"Note: Working hours are not used for hour suggestions when\n"
 "12-hour (AM/PM) time format is selected in Regional settings."
-msgstr "注意：当在区域设置中选择12小时（AM/PM）时间格式时，工作时间不用于小时建议。"
+msgstr ""
+"注意：当在区域设置中选择12小时（AM/PM）时间格式时，工作时间不用于小时建议。"
 
-msgid "Save settings (%s.ini) in the same
-"
+msgid ""
+"Save settings (%s.ini) in the same\n"
 "directory as the program"
-msgstr "将设置（%s.ini）保存在程序所在的同一目录中"
+msgstr ""
+"将设置（%s.ini）保存在程序所在的同一目录中"
 
-msgid "These appearance settings can be overridden
-"
+msgid ""
+"These appearance settings can be overridden\n"
 "for individual tasks in the task edit dialog."
-msgstr "这些外观设置可以在任务编辑对话框中为单个任务覆盖。"
+msgstr ""
+"这些外观设置可以在任务编辑对话框中为单个任务覆盖。"
 
-msgid "This setting can be overridden for individual tasks
-"
+msgid ""
+"This setting can be overridden for individual tasks\n"
 "in the task edit dialog."
-msgstr "此设置可以在任务编辑对话框中为单个任务覆盖。"
+msgstr ""
+"此设置可以在任务编辑对话框中为单个任务覆盖。"
 
-msgid "WARNING: The selected language's locale is not installed on your system.
-"
+msgid ""
+"WARNING: The selected language's locale is not installed on your system.\n"
 "Some date and time formats may not be available."
-msgstr "警告：所选语言的区域设置未安装在您的系统上。
-某些日期和时间格式可能不可用。"
+msgstr ""
+"警告：所选语言的区域设置未安装在您的系统上。\n"
+"某些日期和时间格式可能不可用。"
 
-msgid "When adding an attachment, try to make
-"
+msgid ""
+"When adding an attachment, try to make\n"
 "its path relative to this one."
-msgstr "添加附件时，尝试使其路径相对于此目录。"
+msgstr ""
+"添加附件时，尝试使其路径相对于此目录。"
