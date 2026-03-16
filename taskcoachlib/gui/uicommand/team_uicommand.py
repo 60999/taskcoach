@@ -24,47 +24,21 @@ from taskcoachlib.gui.uicommand import base_uicommand
 from taskcoachlib.i18n import _
 
 
-class TeamMenuUICommand(base_uicommand.UICommand):
-    """团队菜单命令。"""
-    
-    def __init__(self, settings=None, taskFile=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        super().__init__(**kwargs)
-    
-    def menu_text(self):
-        return _("团队")
-    
-    def help_text(self):
-        return _("团队协作功能")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
-        pass
-
-
 class ManageUsersUICommand(base_uicommand.UICommand):
     """管理用户命令。"""
     
     def __init__(self, settings=None, taskFile=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        super().__init__(**kwargs)
+        self._settings = settings
+        self._taskFile = taskFile
+        super().__init__(
+            menu_text=_("管理用户..."),
+            help_text=_("管理团队成员和用户账户"),
+            **kwargs
+        )
     
-    def menu_text(self):
-        return _("管理用户...")
-    
-    def help_text(self):
-        return _("管理团队成员和用户账户")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
+    def do_command(self, event):
         from taskcoachlib.gui.dialog.user_dialogs import UserListDialog
-        dialog = UserListDialog(wx.GetApp().GetTopWindow(), self.__taskFile)
+        dialog = UserListDialog(wx.GetApp().GetTopWindow(), self._taskFile)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -73,22 +47,17 @@ class ManageTeamsUICommand(base_uicommand.UICommand):
     """管理团队命令。"""
     
     def __init__(self, settings=None, taskFile=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        super().__init__(**kwargs)
+        self._settings = settings
+        self._taskFile = taskFile
+        super().__init__(
+            menu_text=_("管理团队..."),
+            help_text=_("管理组织内的团队"),
+            **kwargs
+        )
     
-    def menu_text(self):
-        return _("管理团队...")
-    
-    def help_text(self):
-        return _("管理组织内的团队")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
+    def do_command(self, event):
         from taskcoachlib.gui.dialog.team_dialogs import TeamListDialog
-        dialog = TeamListDialog(wx.GetApp().GetTopWindow(), self.__taskFile)
+        dialog = TeamListDialog(wx.GetApp().GetTopWindow(), self._taskFile)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -97,22 +66,17 @@ class ManageOrganizationsUICommand(base_uicommand.UICommand):
     """管理组织命令。"""
     
     def __init__(self, settings=None, taskFile=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        super().__init__(**kwargs)
+        self._settings = settings
+        self._taskFile = taskFile
+        super().__init__(
+            menu_text=_("管理组织..."),
+            help_text=_("管理组织结构"),
+            **kwargs
+        )
     
-    def menu_text(self):
-        return _("管理组织...")
-    
-    def help_text(self):
-        return _("管理组织结构")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
+    def do_command(self, event):
         from taskcoachlib.gui.dialog.organization_dialogs import OrganizationListDialog
-        dialog = OrganizationListDialog(wx.GetApp().GetTopWindow(), self.__taskFile)
+        dialog = OrganizationListDialog(wx.GetApp().GetTopWindow(), self._taskFile)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -121,22 +85,22 @@ class AssignTaskUICommand(base_uicommand.UICommand):
     """分配任务命令。"""
     
     def __init__(self, settings=None, taskFile=None, viewer=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        self.__viewer = viewer
-        super().__init__(**kwargs)
+        self._settings = settings
+        self._taskFile = taskFile
+        self._viewer = viewer
+        super().__init__(
+            menu_text=_("分配任务..."),
+            help_text=_("将任务分配给团队成员"),
+            **kwargs
+        )
     
-    def menu_text(self):
-        return _("分配任务...")
+    def enabled(self, event):
+        if self._viewer is None:
+            return False
+        return bool(self._viewer.selectedItems())
     
-    def help_text(self):
-        return _("将任务分配给团队成员")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
-        tasks = self.__viewer.selectedItems() if self.__viewer else []
+    def do_command(self, event):
+        tasks = self._viewer.selectedItems() if self._viewer else []
         if not tasks:
             wx.MessageBox(_("请先选择要分配的任务"), _("提示"), wx.OK | wx.ICON_INFORMATION)
             return
@@ -144,7 +108,7 @@ class AssignTaskUICommand(base_uicommand.UICommand):
         from taskcoachlib.gui.dialog.assignment_dialogs import AssignTaskDialog
         dialog = AssignTaskDialog(
             wx.GetApp().GetTopWindow(), 
-            self.__taskFile, 
+            self._taskFile, 
             tasks
         )
         if dialog.ShowModal() == wx.ID_OK:
@@ -156,18 +120,13 @@ class ViewTeamTasksUICommand(base_uicommand.UICommand):
     """查看团队任务命令。"""
     
     def __init__(self, settings=None, taskFile=None, **kwargs):
-        self.__settings = settings
-        self.__taskFile = taskFile
-        super().__init__(**kwargs)
+        self._settings = settings
+        self._taskFile = taskFile
+        super().__init__(
+            menu_text=_("团队任务视图"),
+            help_text=_("查看所有团队成员的任务"),
+            **kwargs
+        )
     
-    def menu_text(self):
-        return _("团队任务视图")
-    
-    def help_text(self):
-        return _("查看所有团队成员的任务")
-    
-    def bitmap(self):
-        return None
-    
-    def on_command(self, event):
-        pass
+    def do_command(self, event):
+        wx.MessageBox(_("团队任务视图功能即将推出"), _("提示"), wx.OK | wx.ICON_INFORMATION)
