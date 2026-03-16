@@ -8699,3 +8699,86 @@ msgid ""
 "version %(currentVersion)s."
 msgstr ""
 "您正在使用 %(name)s 预发布版本 %(currentVersion)s。"
+
+
+# Translations without newlines (for Python string concatenation)
+msgid "Save settings (%s.ini) in the same directory as the program"
+msgstr "将设置（%s.ini）保存在程序所在的同一目录中"
+
+msgid "When adding an attachment, try to make its path relative to this one."
+msgstr "添加附件时，尝试使其路径相对于此目录。"
+
+msgid "Note: Working hours are not used for hour suggestions when 12-hour (AM/PM) time format is selected in Regional settings."
+msgstr "注意：当在区域设置中选择12小时（AM/PM）时间格式时，工作时间不用于小时建议。"
+
+msgid "In effort dialogs where seconds are shown, %(name)s will suggest second values using this setting."
+msgstr "在显示秒的花费对话框中，%(name)s将使用此设置建议秒值。"
+
+msgid "Not yet implemented. Future: row height in tree/list views will scale with this setting."
+msgstr "尚未实现。未来：树/列表视图中的行高将根据此设置进行缩放。"
+
+msgid "These appearance settings can be overridden for individual tasks in the task edit dialog."
+msgstr "这些外观设置可以在任务编辑对话框中为单个任务覆盖。"
+
+msgid "This setting can be overridden for individual tasks in the task edit dialog."
+msgstr "此设置可以在任务编辑对话框中为单个任务覆盖。"
+
+msgid "WARNING: The selected language's locale is not installed on your system. Some date and time formats may not be available."
+msgstr "警告：所选语言的区域设置未安装在您的系统上。某些日期和时间格式可能不可用。"
+
+msgid "Also make this the default snooze time for future reminders"
+msgstr "同时将此设置为未来提醒的默认暂停时间"
+
+msgid "Before saving, %s automatically imports tasks from a Todo.txt file with the same name as the task file, but with extension .txt"
+msgstr "保存之前，%s 会自动从与任务文件同名但扩展名为 .txt 的 Todo.txt 文件导入任务"
+
+msgid "When saving, %s automatically exports tasks to a Todo.txt file with the same name as the task file, but with extension .txt"
+msgstr "保存时，%s 会自动将任务导出到与任务文件同名但扩展名为 .txt 的 Todo.txt 文件"
+
+msgid "If there is no user input for this amount of time (in minutes), %(name)s will ask what to do about current efforts."
+msgstr "如果在这段时间内（以分钟为单位）没有用户输入，%(name)s 将询问如何处理当前花费。"
+
+msgid "Cannot acquire a lock because locking is not supported on the location of %s. Open %s unlocked?"
+msgstr "无法获取锁定，因为 %s 的位置不支持锁定。是否以未锁定方式打开 %s？"
+
+msgid "Cannot delete the selected category/categories because they have assigned objects:"
+msgstr "无法删除所选类别，因为它们已分配给对象："
+
+msgid "Please remove these assignments before deleting the category."
+msgstr "请在删除类别之前移除这些分配。"
+
+msgid "Cannot open %(filename)s because it was created by a newer version of %(name)s. Please upgrade %(name)s."
+msgstr "无法打开 %(filename)s，因为它是由更新版本的 %(name)s 创建的。请升级 %(name)s。"
+
+msgid "Export items from a viewer in Comma Separated Values (CSV) format"
+msgstr "以逗号分隔值 (CSV) 格式从查看器导出项目"
+
+msgid "Export items from a viewer in Todo.txt format (see todotxt.com)"
+msgstr "以 Todo.txt 格式从查看器导出项目（参见 todotxt.com）"
+
+msgid "If a CSS file exists for the exported file, %(name)s will not overwrite it. This allows you to change the style information without losing your changes on the next export."
+msgstr "如果导出文件存在 CSS 文件，%(name)s 将不会覆盖它。这允许您更改样式信息，而不会在下一次导出时丢失您的更改。"
+
+msgid "The selected file is empty. Please select a different file."
+msgstr "所选文件为空。请选择其他文件。"
+
+msgid "When checked, automatically resize columns to fill available space"
+msgstr "选中时，自动调整列宽以填充可用空间"
+
+msgid "When checked, filter on all checked categories, otherwise on any checked category"
+msgstr "选中时，过滤所有选中的类别，否则过滤任一选中的类别"
+
+msgid "When checked, show tasks as tree, otherwise show tasks as list"
+msgstr "选中时，以树形显示任务，否则以列表显示任务"
+
+msgid "When comparing text, sorting is case sensitive (checked) or insensitive (unchecked)"
+msgstr "比较文本时，排序区分大小写（选中）或不区分（未选中）"
+
+msgid "You are using %(name)s prerelease version %(currentVersion)s."
+msgstr "您正在使用 %(name)s 预发布版本 %(currentVersion)s。"
+
+msgid "%s files (*.tsk)|*.tsk|Backup files (*.tsk.bak)|*.tsk.bak|All files (*.*)|*"
+msgstr "%s 文件 (*.tsk)|*.tsk|备份文件 (*.tsk.bak)|*.tsk.bak|所有文件 (*.*)|*"
+
+msgid "CSV files (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*"
+msgstr "CSV 文件 (*.csv)|*.csv|文本文件 (*.txt)|*.txt|所有文件 (*.*)|*"
