@@ -8955,3 +8955,8 @@ msgstr "使用轮询进行文件监控"
 
 msgid "Use slow polling (every 10s) instead of efficient OS notifications. Enable this if your task file is on a network share. You must restart %s after changing this."
 msgstr "使用慢速轮询（每10秒）代替高效的操作系统通知。如果您的任务文件位于网络共享上，请启用此选项。更改此设置后必须重启 %s。"
+
+
+# Language missing translation
+msgid "Language missing or translation needs improving? Open an issue or pull request:"
+msgstr "缺少语言或翻译需要改进？请提交问题或拉取请求："
