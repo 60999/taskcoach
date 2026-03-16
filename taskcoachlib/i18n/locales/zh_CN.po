@@ -7517,3 +7517,538 @@ msgstr "重置窗口布局(&W)"
 
 msgid "&Consolidate efforts per task"
 msgstr "合并每个任务的花费(&C)"
+
+
+# Settings dialog translations
+msgid "%d seconds"
+msgstr "%d 秒"
+
+msgid "%s and %s"
+msgstr "%s 和 %s"
+
+msgid "%s, %s and %s"
+msgstr "%s、%s 和 %s"
+
+msgid "%s, %s, %s and %s"
+msgstr "%s、%s、%s 和 %s"
+
+msgid "(Detected: %s)"
+msgstr "(检测到: %s)"
+
+msgid "0 (e.g. JPY, KRW)"
+msgstr "0 (如日元、韩元)"
+
+msgid "0 minutes"
+msgstr "0 分钟"
+
+msgid "0 seconds"
+msgstr "0 秒"
+
+msgid "1 second"
+msgstr "1 秒"
+
+msgid "12-hour (2:30 PM)"
+msgstr "12小时制 (下午2:30)"
+
+msgid "2 (e.g. USD, EUR)"
+msgstr "2 (如美元、欧元)"
+
+msgid "24-hour (14:30)"
+msgstr "24小时制 (14:30)"
+
+msgid "3 (e.g. BHD, KWD)"
+msgstr "3 (如巴林第纳尔、科威特第纳尔)"
+
+msgid "Add new preset"
+msgstr "添加新预设"
+
+msgid "All settings on this tab require a restart of %s to take effect."
+msgstr "此选项卡上的所有设置需要重启 %s 才能生效。"
+
+msgid "Automatic (detect from system)"
+msgstr "自动 (从系统检测)"
+
+msgid "Automatic (from locale)"
+msgstr "自动 (从区域设置)"
+
+msgid "Background"
+msgstr "背景"
+
+msgid "Change detected, restart required!"
+msgstr "检测到更改，需要重启！"
+
+msgid "Changing the language or date/time format requires a restart of %s."
+msgstr "更改语言或日期/时间格式需要重启 %s。"
+
+msgid "Comma (,)"
+msgstr "逗号 (,)"
+
+msgid "Configure presets for"
+msgstr "配置预设"
+
+msgid "Currency decimal places"
+msgstr "货币小数位数"
+
+msgid "Current presets"
+msgstr "当前预设"
+
+msgid "DD.MM.YYYY (German)"
+msgstr "DD.MM.YYYY (德式)"
+
+msgid "DD/MM/YYYY (European)"
+msgstr "DD/MM/YYYY (欧式)"
+
+msgid "Dark"
+msgstr "深色"
+
+msgid "Dark Theme"
+msgstr "深色主题"
+
+msgid "Dark Theme (Forced)"
+msgstr "深色主题 (强制)"
+
+msgid "Decimal separator"
+msgstr "小数分隔符"
+
+msgid "Detected: %d"
+msgstr "检测到: %d"
+
+msgid "Detected: %s"
+msgstr "检测到: %s"
+
+msgid "Dropdown shows installed dictionaries. Additional languages must be prepackaged."
+msgstr "下拉列表显示已安装的字典。其他语言必须预先打包。"
+
+msgid "Dropdown shows installed dictionaries. Install via: apt install hunspell-en-us"
+msgstr "下拉列表显示已安装的字典。通过以下命令安装: apt install hunspell-en-us"
+
+msgid "Dropdown shows installed dictionaries. Install via: brew install hunspell"
+msgstr "下拉列表显示已安装的字典。通过以下命令安装: brew install hunspell"
+
+msgid "Durations"
+msgstr "持续时间"
+
+msgid "Effort Duration"
+msgstr "花费持续时间"
+
+msgid "Enable spell checking"
+msgstr "启用拼写检查"
+
+msgid "Foreground"
+msgstr "前景色"
+
+msgid "Gradients in calendar views"
+msgstr "日历视图中的渐变"
+
+msgid "Hoverover Highlight"
+msgstr "悬停高亮"
+
+msgid "Hoverover popups"
+msgstr "悬停弹出窗口"
+
+msgid "Icon size"
+msgstr "图标大小"
+
+msgid "Icons"
+msgstr "图标"
+
+msgid "Include context in icon search"
+msgstr "在图标搜索中包含上下文"
+
+msgid "Include theme name in icon search"
+msgstr "在图标搜索中包含主题名称"
+
+msgid "Label"
+msgstr "标签"
+
+msgid "Language missing? Install hunspell packages for your language."
+msgstr "缺少语言？请安装您的语言的 hunspell 包。"
+
+msgid "Legacy"
+msgstr "旧版"
+
+msgid "Light"
+msgstr "浅色"
+
+msgid "Light Theme"
+msgstr "浅色主题"
+
+msgid "Light Theme (Forced)"
+msgstr "浅色主题 (强制)"
+
+msgid "MM/DD/YYYY (US)"
+msgstr "MM/DD/YYYY (美式)"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "N/A"
+msgstr "不适用"
+
+msgid "Note: In 12-hour mode, working hours (set in Features tab) are not used for hour suggestions."
+msgstr "注意：在12小时模式下，工作时间（在功能选项卡中设置）不用于小时建议。"
+
+msgid "Other Months Days Background"
+msgstr "其他月份日期背景"
+
+msgid "Period (.)"
+msgstr "句点 (.)"
+
+msgid "Preview:"
+msgstr "预览："
+
+msgid "Regional"
+msgstr "区域"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Scintilla (Squiggle)"
+msgstr "波浪线"
+
+msgid "Seconds between suggested times"
+msgstr "建议时间之间的秒数"
+
+msgid "Short"
+msgstr "短"
+
+msgid "Show Breeze icons in picker"
+msgstr "在选择器中显示 Breeze 图标"
+
+msgid "Show Noto Emoji icons in picker"
+msgstr "在选择器中显示 Noto Emoji 图标"
+
+msgid "Show Nuvola icons in picker"
+msgstr "在选择器中显示 Nuvola 图标"
+
+msgid "Show Oxygen icons in picker"
+msgstr "在选择器中显示 Oxygen 图标"
+
+msgid "Show Papirus icons in picker"
+msgstr "在选择器中显示 Papirus 图标"
+
+msgid "Show TaskCoach icons in picker"
+msgstr "在选择器中显示 TaskCoach 图标"
+
+msgid "Show a popup with the description of an item when hovering over it"
+msgstr "悬停在项目上时显示描述弹出窗口"
+
+msgid "Spell check language"
+msgstr "拼写检查语言"
+
+msgid "Spell checking"
+msgstr "拼写检查"
+
+msgid "Spellcheck"
+msgstr "拼写检查"
+
+msgid "Statuses"
+msgstr "状态"
+
+msgid "System"
+msgstr "系统"
+
+msgid "Task Duration"
+msgstr "任务持续时间"
+
+msgid "Theme"
+msgstr "主题"
+
+msgid "These presets appear when setting duration in the task or effort editor."
+msgstr "这些预设出现在任务或花费编辑器中设置持续时间时。"
+
+msgid "Time format"
+msgstr "时间格式"
+
+msgid "Today Border"
+msgstr "今日边框"
+
+msgid "Two-tone outline thickness per line in pixels when hovering over a row (0 to disable)"
+msgstr "悬停在行上时的双色轮廓厚度（像素，0表示禁用）"
+
+msgid "Use polling for file monitoring"
+msgstr "使用轮询进行文件监控"
+
+msgid "Using gradients in calendar views may slow down Task Coach"
+msgstr "在日历视图中使用渐变可能会减慢 Task Coach"
+
+msgid "Warning: Spell checking is not available. Install pyenchant to enable this feature."
+msgstr "警告：拼写检查不可用。安装 pyenchant 以启用此功能。"
+
+msgid "Weekday Header Background"
+msgstr "工作日标题背景"
+
+msgid "Weekday Header Foreground"
+msgstr "工作日标题前景色"
+
+msgid "Weekend Day Foreground"
+msgstr "周末日期前景色"
+
+msgid "Windows"
+msgstr "窗口"
+
+msgid "Working hours"
+msgstr "工作时间"
+
+msgid "YYYY-MM-DD (ISO format)"
+msgstr "YYYY-MM-DD (ISO格式)"
+
+msgid "YYYY/MM/DD (East Asian)"
+msgstr "YYYY/MM/DD (东亚格式)"
+
+msgid "to"
+msgstr "到"
+
+
+# Dialog translations
+msgid "%d mins"
+msgstr "%d 分钟"
+
+msgid "%d secs"
+msgstr "%d 秒"
+
+msgid "%s (%d selected)"
+msgstr "%s (%d 已选择)"
+
+msgid "%s (All)"
+msgstr "%s (全部)"
+
+msgid "%s (Attachment)"
+msgstr "%s (附件)"
+
+msgid "%s (Category)"
+msgstr "%s (类别)"
+
+msgid "%s (Effort)"
+msgstr "%s (花费)"
+
+msgid "%s (Note)"
+msgstr "%s (备注)"
+
+msgid "%s (Task)"
+msgstr "%s (任务)"
+
+msgid "(auto-generated)"
+msgstr "(自动生成)"
+
+msgid "(none)"
+msgstr "(无)"
+
+msgid "0 secs"
+msgstr "0 秒"
+
+msgid "1 min"
+msgstr "1 分钟"
+
+msgid "1 sec"
+msgstr "1 秒"
+
+msgid "@ and + prefixed, spaces to underscores"
+msgstr "@ 和 + 前缀，空格转为下划线"
+
+msgid "Adjust Due Date"
+msgstr "调整截止日期"
+
+msgid "Adjust Start Date"
+msgstr "调整开始日期"
+
+msgid "Attachment"
+msgstr "附件"
+
+msgid "Automatic"
+msgstr "自动"
+
+msgid "Calculated time spent until now"
+msgstr "计算到目前为止花费的时间"
+
+msgid "Comma-separated, recursive"
+msgstr "逗号分隔，递归"
+
+msgid "Current UTC timestamp"
+msgstr "当前UTC时间戳"
+
+msgid "Date only, time stripped"
+msgstr "仅日期，时间已去除"
+
+msgid "Dependants"
+msgstr "依赖项"
+
+msgid "Derived values"
+msgstr "派生值"
+
+msgid "Duration"
+msgstr "持续时间"
+
+msgid "Editing Multiple %s - Modal Window"
+msgstr "编辑多个 %s - 模态窗口"
+
+msgid "Effective values"
+msgstr "有效值"
+
+msgid "Efforts"
+msgstr "花费"
+
+msgid "End"
+msgstr "结束"
+
+msgid "Field"
+msgstr "字段"
+
+msgid "Fields exported (all required):"
+msgstr "导出字段（全部必需）："
+
+msgid "Fields to export:"
+msgstr "要导出的字段："
+
+msgid "Folder"
+msgstr "文件夹"
+
+msgid "Formatting"
+msgstr "格式化"
+
+msgid "Fri"
+msgstr "周五"
+
+msgid "Implicit"
+msgstr "隐式"
+
+msgid "Initializing..."
+msgstr "初始化中..."
+
+msgid "Integer 0-100"
+msgstr "整数 0-100"
+
+msgid "Internal identifier"
+msgstr "内部标识符"
+
+msgid "Item"
+msgstr "项目"
+
+msgid "Key:value, date only"
+msgstr "键:值，仅日期"
+
+msgid "Key:value, internal identifier"
+msgstr "键:值，内部标识符"
+
+msgid "Link"
+msgstr "链接"
+
+msgid "Mixed"
+msgstr "混合"
+
+msgid "Mon"
+msgstr "周一"
+
+msgid "NEEDS-ACTION / IN-PROCESS / COMPLETED"
+msgstr "需要操作 / 进行中 / 已完成"
+
+msgid "Number 1-26 mapped to letter A-Z"
+msgstr "数字 1-26 映射到字母 A-Z"
+
+msgid "Number, capped at 3"
+msgstr "数字，上限为 3"
+
+msgid "On days:"
+msgstr "在以下日期："
+
+msgid "Output Field"
+msgstr "输出字段"
+
+msgid "Override values"
+msgstr "覆盖值"
+
+msgid "Path"
+msgstr "路径"
+
+msgid "Path is only shown for single items"
+msgstr "路径仅对单个项目显示"
+
+msgid "Planned duration"
+msgstr "计划持续时间"
+
+msgid "Prefix 'X', date only"
+msgstr "前缀 'X'，仅日期"
+
+msgid "Presets..."
+msgstr "预设..."
+
+msgid "Recursive with arrow separator"
+msgstr "递归，使用箭头分隔符"
+
+msgid "Reset to Default"
+msgstr "重置为默认值"
+
+msgid "Reset to zero"
+msgstr "重置为零"
+
+msgid "Restore the toolbar to its default configuration"
+msgstr "将工具栏恢复为默认配置"
+
+msgid "Retroactive"
+msgstr "追溯"
+
+msgid "Sat"
+msgstr "周六"
+
+msgid "Source"
+msgstr "源"
+
+msgid "Source Field"
+msgstr "源字段"
+
+msgid "Standard"
+msgstr "标准"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Style priority"
+msgstr "样式优先级"
+
+msgid "Subcategories are mutually exclusive"
+msgstr "子类别互斥"
+
+msgid "Sun"
+msgstr "周日"
+
+msgid "Task ID"
+msgstr "任务ID"
+
+msgid "Task description, quoted"
+msgstr "任务描述，引号括起"
+
+msgid "Task subject, quoted"
+msgstr "任务主题，引号括起"
+
+msgid "Text, quoted"
+msgstr "文本，引号括起"
+
+msgid "This item has no parent objects"
+msgstr "此项目没有父对象"
+
+msgid "Thu"
+msgstr "周四"
+
+msgid "Tue"
+msgstr "周二"
+
+msgid "UTC datetime"
+msgstr "UTC日期时间"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Warning: start date-time is after the stop date-time!"
+msgstr "警告：开始日期时间在停止日期时间之后！"
+
+msgid "Warning: start date-time is in the future!"
+msgstr "警告：开始日期时间在未来！"
+
+msgid "Warning: stop date-time is in the future!"
+msgstr "警告：停止日期时间在未来！"
+
+msgid "Wed"
+msgstr "周三"
+
+msgid "text"
+msgstr "文本"
