@@ -8127,3 +8127,14 @@ msgstr "工具栏上的中等图标 (%dx%d)"
 
 msgid "Small images (%dx%d) on the toolbar"
 msgstr "工具栏上的小图标 (%dx%d)"
+
+
+# Missing multi-line translations
+msgid "Note: Working hours are not used for hour suggestions when 12-hour (AM/PM) time format is selected in Regional settings."
+msgstr "注意：当在区域设置中选择12小时（AM/PM）时间格式时，工作时间不用于小时建议。"
+
+msgid "In popup-menus for time selection (e.g. for setting the start time of an effort) %(name)s will suggest times using this setting. The smaller the number of minutes, the more times are suggested. Of course, you can also enter any time you want beside the suggested times."
+msgstr "在时间选择弹出菜单中（例如设置花费的开始时间），%(name)s将使用此设置建议时间。分钟数越小，建议的时间越多。当然，您也可以在建议时间之外输入任何时间。"
+
+msgid "When adding an attachment, try to make its path relative to this one."
+msgstr "添加附件时，尝试使其路径相对于此目录。"
