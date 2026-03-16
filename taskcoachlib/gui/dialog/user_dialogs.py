@@ -23,6 +23,7 @@ User management dialogs for team collaboration.
 import wx
 from taskcoachlib import widgets
 from taskcoachlib.domain.user.auth import PasswordHasher, validate_password_strength
+from taskcoachlib.domain.user import User
 
 
 def _(text):
@@ -32,6 +33,158 @@ def _(text):
         return translate(text)
     except Exception:
         return text
+
+
+class UserListDialog(wx.Dialog):
+    """
+    用户列表对话框。
+    
+    用于管理用户列表，支持添加、编辑、删除用户。
+    """
+    
+    def __init__(self, parent, taskFile, **kwargs):
+        """
+        初始化对话框。
+        
+        Args:
+            parent: 父窗口
+            taskFile: 任务文件对象
+        """
+        super().__init__(
+            parent, 
+            title=_("用户管理"),
+            size=(600, 400),
+            **kwargs
+        )
+        self._taskFile = taskFile
+        self._password_hasher = PasswordHasher()
+        self._create_controls()
+        self._layout_controls()
+        self._bind_events()
+        self._load_users()
+        
+        self.SetMinSize((500, 300))
+        self.Fit()
+    
+    def _create_controls(self):
+        """创建控件。"""
+        self._list = wx.ListCtrl(
+            self, 
+            style=wx.LC_REPORT | wx.LC_SINGLE_SEL
+        )
+        self._list.InsertColumn(0, _("用户名"), width=150)
+        self._list.InsertColumn(1, _("邮箱"), width=200)
+        self._list.InsertColumn(2, _("显示名称"), width=150)
+        self._list.InsertColumn(3, _("状态"), width=80)
+        
+        self._add_btn = wx.Button(self, label=_("添加"))
+        self._edit_btn = wx.Button(self, label=_("编辑"))
+        self._delete_btn = wx.Button(self, label=_("删除"))
+        self._close_btn = wx.Button(self, wx.ID_CLOSE, label=_("关闭"))
+    
+    def _layout_controls(self):
+        """布局控件。"""
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer.Add(self._add_btn, 0, wx.ALL, 5)
+        button_sizer.Add(self._edit_btn, 0, wx.ALL, 5)
+        button_sizer.Add(self._delete_btn, 0, wx.ALL, 5)
+        button_sizer.AddStretchSpacer()
+        button_sizer.Add(self._close_btn, 0, wx.ALL, 5)
+        
+        main_sizer.Add(self._list, 1, wx.EXPAND | wx.ALL, 10)
+        main_sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        
+        self.SetSizer(main_sizer)
+    
+    def _bind_events(self):
+        """绑定事件。"""
+        self._add_btn.Bind(wx.EVT_BUTTON, self._on_add)
+        self._edit_btn.Bind(wx.EVT_BUTTON, self._on_edit)
+        self._delete_btn.Bind(wx.EVT_BUTTON, self._on_delete)
+        self._close_btn.Bind(wx.EVT_BUTTON, self._on_close)
+        self._list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self._on_edit)
+    
+    def _load_users(self):
+        """加载用户列表。"""
+        self._list.DeleteAllItems()
+        for user in self._taskFile.users():
+            idx = self._list.InsertItem(self._list.GetItemCount(), user.username() or '')
+            self._list.SetItem(idx, 1, user.email() or '')
+            self._list.SetItem(idx, 2, user.displayName() or '')
+            status = _("活跃") if user.isActive() else _("禁用")
+            self._list.SetItem(idx, 3, status)
+            self._list.SetItemData(idx, id(user))
+    
+    def _get_selected_user(self):
+        """获取选中的用户。"""
+        idx = self._list.GetFirstSelected()
+        if idx == -1:
+            return None
+        
+        user_data = self._list.GetItemData(idx)
+        for user in self._taskFile.users():
+            if id(user) == user_data:
+                return user
+        return None
+    
+    def _on_add(self, event):
+        """添加用户。"""
+        dialog = UserDialog(self)
+        if dialog.ShowModal() == wx.ID_OK:
+            data = dialog.getUserData()
+            user = User(
+                username=data['username'],
+                email=data['email'],
+                display_name=data['display_name'],
+                is_active=data['is_active'],
+                is_superuser=data['is_superuser'],
+            )
+            if data.get('password_hash'):
+                user.setPasswordHash(data['password_hash'])
+            self._taskFile.users().append(user)
+            self._load_users()
+        dialog.Destroy()
+    
+    def _on_edit(self, event):
+        """编辑用户。"""
+        user = self._get_selected_user()
+        if user is None:
+            wx.MessageBox(_("请先选择要编辑的用户"), _("提示"), wx.OK | wx.ICON_INFORMATION)
+            return
+        
+        dialog = UserDialog(self, user=user)
+        if dialog.ShowModal() == wx.ID_OK:
+            data = dialog.getUserData()
+            user.setUsername(data['username'])
+            user.setEmail(data['email'])
+            user.setDisplayName(data['display_name'])
+            user.setIsActive(data['is_active'])
+            user.setIsSuperuser(data['is_superuser'])
+            if data.get('password_hash'):
+                user.setPasswordHash(data['password_hash'])
+            self._load_users()
+        dialog.Destroy()
+    
+    def _on_delete(self, event):
+        """删除用户。"""
+        user = self._get_selected_user()
+        if user is None:
+            wx.MessageBox(_("请先选择要删除的用户"), _("提示"), wx.OK | wx.ICON_INFORMATION)
+            return
+        
+        if wx.MessageBox(
+            _("确定要删除用户 '%s' 吗？") % user.username(), 
+            _("确认删除"), 
+            wx.YES_NO | wx.ICON_QUESTION
+        ) == wx.YES:
+            self._taskFile.users().remove(user)
+            self._load_users()
+    
+    def _on_close(self, event):
+        """关闭对话框。"""
+        self.EndModal(wx.ID_CLOSE)
 
 
 class UserDialog(wx.Dialog):

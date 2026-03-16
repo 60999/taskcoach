@@ -24,5 +24,6 @@ Provides user, role and permission entities for team collaboration.
 from .user import User
 from .role import Role
 from .permission import Permission, UserRole
+from .usercontainer import UserContainer
 
-__all__ = ['User', 'Role', 'Permission', 'UserRole']
+__all__ = ['User', 'Role', 'Permission', 'UserRole', 'UserContainer']

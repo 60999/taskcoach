@@ -22,6 +22,8 @@ import fasteners
 from . import xml
 from taskcoachlib import patterns, operating_system
 from taskcoachlib.domain import base, task, category, note, effort, attachment
+from taskcoachlib.domain.user import UserContainer
+from taskcoachlib.domain.organization import OrganizationContainer, TeamContainer
 import uuid
 from taskcoachlib.changes import ChangeMonitor, ChangeSynchronizer
 from taskcoachlib.filesystem import (
@@ -123,6 +125,9 @@ class TaskFile(patterns.Observer):
         self.__categories = category.CategoryList()
         self.__notes = note.NoteContainer()
         self.__efforts = effort.EffortList(self.tasks())
+        self.__users = UserContainer()
+        self.__organizations = OrganizationContainer()
+        self.__teams = TeamContainer()
         self.__guid = str(uuid.uuid4())
         self.__syncMLConfig = None  # SyncML removed - kept for file format compatibility
         self.__monitor = ChangeMonitor()
@@ -215,6 +220,15 @@ class TaskFile(patterns.Observer):
 
     def efforts(self):
         return self.__efforts
+
+    def users(self):
+        return self.__users
+
+    def organizations(self):
+        return self.__organizations
+
+    def teams(self):
+        return self.__teams
 
     def syncMLConfig(self):
         return self.__syncMLConfig

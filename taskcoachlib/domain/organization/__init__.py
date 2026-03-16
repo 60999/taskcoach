@@ -24,5 +24,7 @@ Provides organization and team entities for multi-tenant support.
 from .organization import Organization
 from .team import Team
 from .membership import Membership, Invitation
+from .organizationcontainer import OrganizationContainer, TeamContainer
 
-__all__ = ['Organization', 'Team', 'Membership', 'Invitation']
+__all__ = ['Organization', 'Team', 'Membership', 'Invitation', 
+           'OrganizationContainer', 'TeamContainer']
