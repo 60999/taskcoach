@@ -97,10 +97,10 @@ class AssignTaskUICommand(base_uicommand.UICommand):
     def enabled(self, event):
         if self._viewer is None:
             return False
-        return bool(self._viewer.selectedItems())
+        return bool(self._viewer.curselection())
     
     def do_command(self, event):
-        tasks = self._viewer.selectedItems() if self._viewer else []
+        tasks = self._viewer.curselection() if self._viewer else []
         if not tasks:
             wx.MessageBox(_("请先选择要分配的任务"), _("提示"), wx.OK | wx.ICON_INFORMATION)
             return
