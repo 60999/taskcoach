@@ -8052,3 +8052,78 @@ msgstr "周三"
 
 msgid "text"
 msgstr "文本"
+
+
+# Viewer and panel translations
+msgid "&ID"
+msgstr "ID(&I)"
+
+msgid "&Status"
+msgstr "状态(&S)"
+
+msgid "Category &icons"
+msgstr "类别图标(&I)"
+
+msgid "Category icons"
+msgstr "类别图标"
+
+msgid "Show/hide ID column"
+msgstr "显示/隐藏ID列"
+
+msgid "Show/hide category icons column"
+msgstr "显示/隐藏类别图标列"
+
+msgid "Show/hide status combo column (icon and text)"
+msgstr "显示/隐藏状态下拉列（图标和文本）"
+
+msgid "Show/hide status icon column"
+msgstr "显示/隐藏状态图标列"
+
+msgid "Show/hide status text column"
+msgstr "显示/隐藏状态文本列"
+
+msgid "Sort by ID"
+msgstr "按ID排序"
+
+msgid "Sort notes by ID"
+msgstr "按ID排序备注"
+
+msgid "Status &combo"
+msgstr "状态下拉(&C)"
+
+msgid "Status &icon"
+msgstr "状态图标(&I)"
+
+msgid "Status combo"
+msgstr "状态下拉"
+
+msgid "Status icon"
+msgstr "状态图标"
+
+# MainWindow and menu translations
+msgid "&Activate next viewer\tCtrl+PgDn"
+msgstr "激活下一个查看器(&A)\tCtrl+PgDn"
+
+msgid "&Dependency Graph"
+msgstr "依赖关系图(&D)"
+
+msgid "&Team"
+msgstr "团队(&T)"
+
+msgid "(No categories defined yet)"
+msgstr "(尚未定义类别)"
+
+msgid "Activate &previous viewer\tCtrl+PgUp"
+msgstr "激活上一个查看器(&P)\tCtrl+PgUp"
+
+msgid "All tasks are completed!"
+msgstr "所有任务已完成！"
+
+msgid "Large images (%dx%d) on the toolbar"
+msgstr "工具栏上的大图标 (%dx%d)"
+
+msgid "Medium-sized images (%dx%d) on the toolbar"
+msgstr "工具栏上的中等图标 (%dx%d)"
+
+msgid "Small images (%dx%d) on the toolbar"
+msgstr "工具栏上的小图标 (%dx%d)"
