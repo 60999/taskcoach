@@ -7401,3 +7401,119 @@ msgstr "仅显示未分配"
 
 msgid "Show my tasks only"
 msgstr "仅显示我的任务"
+
+
+# Menu item translations with shortcuts
+msgid "&Open...\tCtrl+O"
+msgstr "打开(&O)...\tCtrl+O"
+
+msgid "&Close\tCtrl+W"
+msgstr "关闭(&C)\tCtrl+W"
+
+msgid "&Save\tCtrl+S"
+msgstr "保存(&S)\tCtrl+S"
+
+msgid "Merge &disk changes\tShift-Ctrl-M"
+msgstr "合并磁盘更改(&D)\tShift-Ctrl-M"
+
+msgid "S&ave as...\tShift+Ctrl+S"
+msgstr "另存为(&A)...\tShift+Ctrl+S"
+
+msgid "&Page setup...\tShift+Ctrl+P"
+msgstr "页面设置(&P)...\tShift+Ctrl+P"
+
+msgid "&Print...\tCtrl+P"
+msgstr "打印(&P)...\tCtrl+P"
+
+msgid "&Quit\tCtrl+Q"
+msgstr "退出(&Q)\tCtrl+Q"
+
+msgid "Cu&t\tCtrl+X"
+msgstr "剪切(&T)\tCtrl+X"
+
+msgid "&Copy\tCtrl+C"
+msgstr "复制(&C)\tCtrl+C"
+
+msgid "&Paste\tCtrl+V"
+msgstr "粘贴(&P)\tCtrl+V"
+
+msgid "&Preferences...\tAlt+P"
+msgstr "首选项(&P)...\tAlt+P"
+
+msgid "Select &All\tCtrl+A"
+msgstr "全选(&A)\tCtrl+A"
+
+msgid "&Deselect All\tCtrl+Shift+A"
+msgstr "取消全选(&D)\tCtrl+Shift+A"
+
+msgid "&Clear all filters\tShift-Ctrl-R"
+msgstr "清除所有过滤器(&C)\tShift-Ctrl-R"
+
+msgid "&Reset all categories\tCtrl-R"
+msgstr "重置所有类别(&R)\tCtrl-R"
+
+msgid "&Expand all\tShift+Ctrl+E"
+msgstr "全部展开(&E)\tShift+Ctrl+E"
+
+msgid "Co&llapse all\tShift+Ctrl+C"
+msgstr "全部折叠(&L)\tShift+Ctrl+C"
+
+msgid "&Edit...\tRETURN"
+msgstr "编辑(&E)...\t回车"
+
+msgid "Edit &tracked task...\tShift-Alt-T"
+msgstr "编辑跟踪任务(&T)...\tShift-Alt-T"
+
+msgid "&Delete\tCtrl+DEL"
+msgstr "删除(&D)\tCtrl+DEL"
+
+msgid "Mark task &active\tAlt+RETURN"
+msgstr "标记任务为活动(&A)\tAlt+回车"
+
+msgid "Mark task &inactive\tCtrl+Alt+RETURN"
+msgstr "标记任务为非活动(&I)\tCtrl+Alt+回车"
+
+msgid "Mark task &completed\tCtrl+RETURN"
+msgstr "标记任务为已完成(&C)\tCtrl+回车"
+
+msgid "&Maximize priority\tShift+Ctrl+I"
+msgstr "最大化优先级(&M)\tShift+Ctrl+I"
+
+msgid "&Minimize priority\tShift+Ctrl+D"
+msgstr "最小化优先级(&M)\tShift+Ctrl+D"
+
+msgid "&Increase priority\tCtrl+I"
+msgstr "提高优先级(&I)\tCtrl+I"
+
+msgid "&Decrease priority\tCtrl+D"
+msgstr "降低优先级(&D)\tCtrl+D"
+
+msgid "Add &note...\tCtrl+B"
+msgstr "添加备注(&N)...\tCtrl+B"
+
+msgid "Open all notes...\tShift+Ctrl+B"
+msgstr "打开所有备注...\tShift+Ctrl+B"
+
+msgid "&Start tracking effort\tCtrl-T"
+msgstr "开始跟踪花费(&S)\tCtrl-T"
+
+msgid "New category...\tCtrl-G"
+msgstr "新建类别...\tCtrl-G"
+
+msgid "Check &all categories"
+msgstr "选中所有类别(&A)"
+
+msgid "&Uncheck all categories"
+msgstr "取消选中所有类别(&U)"
+
+msgid "&Add attachment...\tShift-Ctrl-A"
+msgstr "添加附件(&A)...\tShift-Ctrl-A"
+
+msgid "&Open all attachments...\tShift+Ctrl+O"
+msgstr "打开所有附件(&O)...\tShift+Ctrl+O"
+
+msgid "Reset &window layout"
+msgstr "重置窗口布局(&W)"
+
+msgid "&Consolidate efforts per task"
+msgstr "合并每个任务的花费(&C)"
