@@ -6,7 +6,7 @@ license: Apache-2.0
 
 metadata:
   author: taskcoach-team
-  version: "1.0.0"
+  version: "1.1.0"
   tags:
     - i18n
     - translation
@@ -20,6 +20,17 @@ metadata:
 ## 功能概述
 
 自动检测源代码中的翻译字符串，解析现有翻译文件，对比找出缺失项，生成翻译建议并更新翻译文件。
+
+## 支持的翻译文件格式
+
+| 格式 | 扩展名 | 适用框架 | 详细规范 |
+|------|--------|----------|----------|
+| PO/MO | .po, .mo | Python gettext, C gettext | [PO文件格式规范](references/po-file-format.md) |
+| JSON | .json | i18next, vue-i18n, react-intl | [JSON文件格式规范](references/json-file-format.md) |
+| Properties | .properties | Java ResourceBundle, Spring | [Properties文件格式规范](references/properties-file-format.md) |
+| XML | .xml | Android | [其他格式规范](references/other-formats.md) |
+| Strings | .strings | iOS | [其他格式规范](references/other-formats.md) |
+| YAML | .yaml, .yml | Rails, Symfony | [其他格式规范](references/other-formats.md) |
 
 ## 支持的编程语言
 
@@ -51,10 +62,7 @@ i18n.t("translation.key")
 
 ### 2. 解析翻译文件
 
-支持多种翻译文件格式：
-- `.po` / `.mo` (gettext)
-- `.json` (i18next, vue-i18n)
-- `.properties` (Java ResourceBundle)
+支持多种翻译文件格式，详见各格式规范文档。
 
 ### 3. 对比缺失项
 
@@ -84,6 +92,8 @@ _("This is a very long string "
 msgid "This is a very long string that spans multiple lines"
 ```
 
+详见 [PO文件格式规范 - Python字符串自动连接问题](references/po-file-format.md#python字符串自动连接问题)
+
 ### 快捷键格式
 
 ```po
@@ -91,12 +101,16 @@ msgid "&File\tCtrl+S"
 msgstr "文件(&F)\tCtrl+S"
 ```
 
+详见 [PO文件格式规范 - 快捷键格式](references/po-file-format.md#快捷键格式)
+
 ### 占位符格式
 
 ```po
 msgid "User %(name)s has %(count)d items"
 msgstr "%(name)s 用户有 %(count)d 个项目"
 ```
+
+详见 [PO文件格式规范 - 占位符格式](references/po-file-format.md#占位符格式)
 
 ## 使用方法
 
@@ -124,6 +138,13 @@ msgstr "%(name)s 用户有 %(count)d 个项目"
 msgid "Save settings"
 msgstr "保存设置"
 ```
+
+## 参考文档
+
+- [PO文件格式规范](references/po-file-format.md) - GNU gettext翻译文件格式
+- [JSON文件格式规范](references/json-file-format.md) - JavaScript/TypeScript翻译文件格式
+- [Properties文件格式规范](references/properties-file-format.md) - Java翻译文件格式
+- [其他格式规范](references/other-formats.md) - Android、iOS、YAML等格式
 
 ## 注意事项
 
