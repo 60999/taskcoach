@@ -8947,3 +8947,11 @@ msgstr "无法打开到 %(server)s:%(port)s 的IMAP连接\n来获取Thunderbird�
 
 msgid "WARNING: The selected language's locale is not installed on your system. Some date and time formats may appear in your system's format instead."
 msgstr "警告：所选语言的区域设置未安装在您的系统上。某些日期和时间格式可能会以您系统的格式显示。"
+
+
+# File monitoring translations
+msgid "Use polling for file monitoring"
+msgstr "使用轮询进行文件监控"
+
+msgid "Use slow polling (every 10s) instead of efficient OS notifications. Enable this if your task file is on a network share. You must restart %s after changing this."
+msgstr "使用慢速轮询（每10秒）代替高效的操作系统通知。如果您的任务文件位于网络共享上，请启用此选项。更改此设置后必须重启 %s。"
