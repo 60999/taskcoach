@@ -1,18 +1,19 @@
 ---
 name: i18n-translation-assistant
-description: 本技能应在用户要求"检查翻译"、"检测翻译"、"添加翻译"、"国际化"、"i18n"、"本地化"、"多语言支持"、"翻译缺失"时使用。自动检测源代码中需要翻译的内容，生成和维护多语言翻译文件，支持Python、JavaScript、Java等多种编程语言和翻译框架。
+description: 本技能应在用户要求"检查翻译"、"检测翻译"、"添加翻译"、"国际化"、"i18n"、"本地化"、"多语言支持"、"翻译缺失"时使用。自动检测源代码中需要翻译的内容，生成和维护多语言翻译文件，支持Python、JavaScript、Java、HarmonyOS等多种编程语言和翻译框架。
 
 license: Apache-2.0
 
 metadata:
   author: taskcoach-team
-  version: "1.1.0"
+  version: "1.2.0"
   tags:
     - i18n
     - translation
     - localization
     - gettext
     - internationalization
+    - harmonyos
 ---
 
 # i18n 翻译助手
@@ -23,14 +24,15 @@ metadata:
 
 ## 支持的翻译文件格式
 
-| 格式 | 扩展名 | 适用框架 | 详细规范 |
-|------|--------|----------|----------|
-| PO/MO | .po, .mo | Python gettext, C gettext | [PO文件格式规范](references/po-file-format.md) |
-| JSON | .json | i18next, vue-i18n, react-intl | [JSON文件格式规范](references/json-file-format.md) |
-| Properties | .properties | Java ResourceBundle, Spring | [Properties文件格式规范](references/properties-file-format.md) |
-| XML | .xml | Android | [其他格式规范](references/other-formats.md) |
-| Strings | .strings | iOS | [其他格式规范](references/other-formats.md) |
-| YAML | .yaml, .yml | Rails, Symfony | [其他格式规范](references/other-formats.md) |
+| 格式 | 扩展名 | 适用框架 | 标准来源 | 详细规范 |
+|------|--------|----------|----------|----------|
+| PO/MO | .po, .mo | Python gettext, C gettext | GNU Project | [PO文件格式规范](references/po-file-format.md) |
+| JSON | .json | i18next, vue-i18n, react-intl | ECMA-404 | [JSON文件格式规范](references/json-file-format.md) |
+| Properties | .properties | Java ResourceBundle, Spring | Oracle/OpenJDK | [Properties文件格式规范](references/properties-file-format.md) |
+| Android XML | .xml | Android | Google/AOSP | [其他格式规范](references/other-formats.md) |
+| iOS Strings | .strings | iOS, macOS | Apple | [其他格式规范](references/other-formats.md) |
+| HarmonyOS JSON | string.json | HarmonyOS NEXT | 华为 | [HarmonyOS格式规范](references/harmonyos-format.md) |
+| YAML | .yaml, .yml | Rails, Symfony | YAML 1.2 | [其他格式规范](references/other-formats.md) |
 
 ## 支持的编程语言
 
@@ -41,6 +43,7 @@ metadata:
 | React | react-intl | `<FormattedMessage>`, `formatMessage()` |
 | Java | ResourceBundle, Spring | `ResourceBundle.getBundle()` |
 | C/C++ | gettext | `gettext()`, `_()` |
+| ArkTS | HarmonyOS | `$r('app.string.key')` |
 
 ## 工作流程
 
@@ -58,6 +61,11 @@ gettext("Translate this string")
 // JavaScript i18next 模式
 t("translation.key")
 i18n.t("translation.key")
+```
+
+```typescript
+// HarmonyOS ArkTS 模式
+$r('app.string.welcome')
 ```
 
 ### 2. 解析翻译文件
@@ -141,10 +149,15 @@ msgstr "保存设置"
 
 ## 参考文档
 
+### 格式规范
 - [PO文件格式规范](references/po-file-format.md) - GNU gettext翻译文件格式
 - [JSON文件格式规范](references/json-file-format.md) - JavaScript/TypeScript翻译文件格式
 - [Properties文件格式规范](references/properties-file-format.md) - Java翻译文件格式
+- [HarmonyOS格式规范](references/harmonyos-format.md) - 鸿蒙NEXT翻译文件格式
 - [其他格式规范](references/other-formats.md) - Android、iOS、YAML等格式
+
+### 标准来源
+- [翻译文件格式标准来源](references/standards-sources.md) - 各格式的官方标准文档链接
 
 ## 注意事项
 
@@ -152,3 +165,4 @@ msgstr "保存设置"
 2. 保持占位符格式不变
 3. 快捷键字母避免冲突
 4. 使用命名占位符处理语序差异
+5. HarmonyOS需要提供base默认资源
