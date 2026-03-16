@@ -252,23 +252,124 @@ def _get_system_language():
     doesn't reliably read LANG environment variable on Linux. We check
     environment variables directly first.
     """
+    # 缓存结果，避免重复检测
+    if hasattr(_get_system_language, '_cached_lang'):
+        return _get_system_language._cached_lang
+    
+    import platform
+    
+    # Windows 特殊处理
+    if platform.system() == 'Windows':
+        try:
+            # 使用 ctypes 获取 Windows 系统语言
+            import ctypes
+            windll = ctypes.windll.kernel32
+            lang_id = windll.GetUserDefaultUILanguage()
+            # 将 Windows 语言 ID 转换为语言代码
+            # 0x0804 = 简体中文 (zh_CN)
+            # 0x0404 = 繁体中文 (zh_TW)
+            # 0x0409 = 英语 (en_US)
+            # 0x0407 = 德语 (de_DE)
+            # 0x040c = 法语 (fr_FR)
+            # 0x0411 = 日语 (ja_JP)
+            # 0x0412 = 韩语 (ko_KR)
+            # 0x0419 = 俄语 (ru_RU)
+            # 0x0c0a = 西班牙语 (es_ES)
+            lang_map = {
+                0x0804: 'zh_CN',  # 简体中文
+                0x0404: 'zh_TW',  # 繁体中文 (台湾)
+                0x0904: 'zh_SG',  # 简体中文 (新加坡)
+                0x0409: 'en_US',  # 英语 (美国)
+                0x0809: 'en_GB',  # 英语 (英国)
+                0x0407: 'de_DE',  # 德语
+                0x040c: 'fr_FR',  # 法语
+                0x0411: 'ja_JP',  # 日语
+                0x0412: 'ko_KR',  # 韩语
+                0x0419: 'ru_RU',  # 俄语
+                0x0c0a: 'es_ES',  # 西班牙语
+                0x0410: 'it_IT',  # 意大利语
+                0x0413: 'nl_NL',  # 荷兰语
+                0x0414: 'nb_NO',  # 挪威语
+                0x041d: 'sv_SE',  # 瑞典语
+                0x0415: 'pl_PL',  # 波兰语
+                0x0416: 'pt_BR',  # 葡萄牙语 (巴西)
+                0x0816: 'pt_PT',  # 葡萄牙语
+                0x041f: 'tr_TR',  # 土耳其语
+                0x042d: 'eu_ES',  # 巴斯克语
+                0x042f: 'bg_BG',  # 保加利亚语
+                0x041a: 'hr_HR',  # 克罗地亚语
+                0x0405: 'cs_CZ',  # 捷克语
+                0x0406: 'da_DK',  # 丹麦语
+                0x0408: 'el_GR',  # 希腊语
+                0x040e: 'hu_HU',  # 匈牙利语
+                0x040f: 'is_IS',  # 冰岛语
+                0x041e: 'th_TH',  # 泰语
+                0x0420: 'ur_PK',  # 乌尔都语
+                0x0422: 'uk_UA',  # 乌克兰语
+                0x0424: 'sl_SI',  # 斯洛文尼亚语
+                0x0425: 'et_EE',  # 爱沙尼亚语
+                0x0426: 'lv_LV',  # 拉脱维亚语
+                0x0427: 'lt_LT',  # 立陶宛语
+                0x0439: 'hi_IN',  # 印地语
+                0x044e: 'mr_IN',  # 马拉地语
+                0x0446: 'pa_IN',  # 旁遮普语
+                0x0447: 'gu_IN',  # 古吉拉特语
+                0x044a: 'te_IN',  # 泰卢固语
+                0x044b: 'kn_IN',  # 卡纳达语
+                0x0444: 'tt_RU',  # 鞑靼语
+                0x0452: 'cy_GB',  # 威尔士语
+                0x045d: 'iu_CA',  # 因纽特语
+                0x0465: 'div_MV', # 迪维希语
+                0x048c: 'ber_DZ', # 柏柏尔语
+            }
+            if lang_id in lang_map:
+                lang = lang_map[lang_id]
+                _log_i18n(f"Windows language ID {hex(lang_id)} -> {lang}")
+                _get_system_language._cached_lang = lang
+                return lang
+            # 尝试从主语言 ID 匹配
+            primary_lang = lang_id & 0x3FF
+            for win_id, lang_code in lang_map.items():
+                if (win_id & 0x3FF) == primary_lang:
+                    _log_i18n(f"Windows primary language ID {hex(primary_lang)} -> {lang_code}")
+                    _get_system_language._cached_lang = lang_code
+                    return lang_code
+        except Exception as e:
+            _log_i18n(f"Failed to get Windows language: {e}")
+    
     # Check LANG and LC_ALL environment variables first
     lang = os.environ.get('LANG', os.environ.get('LC_ALL', ''))
     if lang:
         # Strip encoding suffix (e.g., "de_DE.UTF-8" -> "de_DE")
         lang = lang.split('.')[0]
         if lang and lang != "C" and lang != "POSIX":
+            _get_system_language._cached_lang = lang
             return lang
 
     # Fallback to locale.getlocale()
     try:
         lang = locale.getlocale(locale.LC_MESSAGES)[0]
         if lang and lang != "C" and lang != "POSIX":
+            _get_system_language._cached_lang = lang
             return lang
+    except Exception:
+        pass
+    
+    # 尝试使用 wxPython 获取系统语言
+    try:
+        import wx
+        system_lang = wx.Locale.GetSystemLanguage()
+        if system_lang != wx.LANGUAGE_UNKNOWN:
+            lang_info = wx.Locale.GetLanguageInfo(system_lang)
+            if lang_info:
+                lang = lang_info.CanonicalName
+                _get_system_language._cached_lang = lang
+                return lang
     except Exception:
         pass
 
     # Final fallback
+    _get_system_language._cached_lang = "en_US"
     return "en_US"
 
 

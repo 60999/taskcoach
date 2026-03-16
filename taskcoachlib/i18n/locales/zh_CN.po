@@ -2079,11 +2079,11 @@ msgid ""
 "\"Start of working day\" and \"End of working day\" use the working day as "
 "set in the Features tab of this preferences dialog."
 msgstr ""
-"新任务以"预设"日期和时间填充并选中。"建议"的日期和时间已填充但未选中。"
+"新任务以\"预设\"日期和时间填充并选中。\"建议\"的日期和时间已填充但未选中。"
 ""
-""一天开始"是午夜，"一天结束"是午夜前一刻。使用这些时，任务查看器隐藏时间只显示日期。"
+"\"一天开始\"是午夜，\"一天结束\"是午夜前一刻。使用这些时，任务查看器隐藏时间只显示日期。"
 ""
-""工作日开始"和"工作日结束"使用此首选项对话框功能选项卡中设置的工作日。"
+"\"工作日开始\"和\"工作日结束\"使用此首选项对话框功能选项卡中设置的工作日。"
 
 #: taskcoachlib/gui/dialog/preferences.py:661
 msgid "Task reminders"
@@ -4271,7 +4271,7 @@ msgid ""
 "Show the \"Manual ordering\" column, then drag and drop items from this "
 "column to sort them arbitrarily."
 msgstr ""
-"显示"手动排序"列，然后从此列拖放项目来重新排序。"
+"显示\"手动排序\"列，然后从此列拖放项目来重新排序。"
 
 #: taskcoachlib/gui/viewer/task.py:1022
 msgid "Dependents"
@@ -5440,7 +5440,7 @@ msgid ""
 "previously, all those items will reappear, as the server\n"
 "doesn't know they're deleted."
 msgstr ""
-"在这种情况下，可以使用文件菜单中的"清除已删除项目"菜单项"
+"在这种情况下，可以使用文件菜单中的\"清除已删除项目\"菜单项"
 "永久删除它们。"
 
 #: taskcoachlib/help/__init__.py:558
@@ -5463,7 +5463,7 @@ msgid ""
 "It supports the following features:"
 msgstr ""
 "%(name)s有一个iPhone/iPod Touch/iPad伴侣应用，"
-"可在<a href="http://itunes.com/app/taskcoach/">Apple的App Store</a>上获得。"
+"可在<a href=\"http://itunes.com/app/taskcoach/\">Apple的App Store</a>上获得。"
 
 #: taskcoachlib/help/__init__.py:569
 msgid ""
@@ -5546,7 +5546,7 @@ msgid ""
 "considered \"soon\"."
 msgstr ""
 "即将到期天数：未来多少天"
-"被认为是"很快"。"
+"被认为是\"很快\"。"
 
 #: taskcoachlib/help/__init__.py:597
 msgid "Configuration on the desktop, all platforms"
@@ -5572,7 +5572,7 @@ msgid ""
 "identifying the computer it's running on. To customize this, you may\n"
 "change the \"Bonjour service name\" in the configuration."
 msgstr ""
-"当您在类别视图中点击"同步"按钮时，%(name)s"
+"当您在类别视图中点击\"同步\"按钮时，%(name)s"
 "将自动尝试查找正在运行的桌面实例。"
 
 #: taskcoachlib/help/__init__.py:612
@@ -5603,7 +5603,7 @@ msgid ""
 "unblock it when asked by the firewall."
 msgstr ""
 "在Windows上，您必须安装<a"
-"href="http://support.apple.com/kb/dl999">Bonjour for Windows</a>并在"
+"href=\"http://support.apple.com/kb/dl999\">Bonjour for Windows</a>并在"
 "防火墙询问时解除阻止。"
 
 #: taskcoachlib/help/__init__.py:625
@@ -5620,7 +5620,7 @@ msgid ""
 "(libavahi-compat-libdnssd1 on Ubuntu for instance)."
 msgstr ""
 "在Linux上，您必须安装并运行"
-"<a href="http://avahi.org/">Avahi</a>守护程序。"
+"<a href=\"http://avahi.org/\">Avahi</a>守护程序。"
 
 #: taskcoachlib/help/__init__.py:634
 msgid ""
@@ -5670,7 +5670,7 @@ msgid ""
 "format</a> and then edit your tasks on your Android device."
 msgstr ""
 "不，%(name)s不适用于Android平台。但是，"
-"<a target="_blank" href="http://www.todotodo.com">Todo Todo</a>可以与%(name)s同步。"
+"<a target=\"_blank\" href=\"http://www.todotodo.com\">Todo Todo</a>可以与%(name)s同步。"
 
 #: taskcoachlib/help/__init__.py:665
 msgid ""
@@ -5815,7 +5815,7 @@ msgid ""
 "attachments are part of the template. Only categories are not saved."
 msgstr ""
 "可以通过选择一个任务（只有一个）并点击"
-""保存为模板"菜单项来创建模板。"
+"\"保存为模板\"菜单项来创建模板。"
 
 #: taskcoachlib/help/__init__.py:742
 msgid ""
@@ -5843,7 +5843,7 @@ msgid ""
 "and the \n"
 "due date by the current date plus one day."
 msgstr ""
-"要实例化任务模板，请使用"从模板新建任务""
+"要实例化任务模板，请使用\"从模板新建任务\""
 "菜单项。"
 
 #: taskcoachlib/help/__init__.py:755
@@ -6651,7 +6651,7 @@ msgid ""
 "Could not select inbox \"%s\"\n"
 "(%s)"
 msgstr ""
-"无法选择收件箱"%s""
+"无法选择收件箱\"%s\""
 "(%s)"
 
 #: taskcoachlib/mailer/thunderbird.py:357
