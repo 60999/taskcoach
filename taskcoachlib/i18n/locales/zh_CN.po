@@ -8782,3 +8782,149 @@ msgstr "%s 文件 (*.tsk)|*.tsk|备份文件 (*.tsk.bak)|*.tsk.bak|所有文件 
 
 msgid "CSV files (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*"
 msgstr "CSV 文件 (*.csv)|*.csv|文本文件 (*.txt)|*.txt|所有文件 (*.*)|*"
+
+
+# Chinese source strings translations
+msgid "分配任务"
+msgstr "分配任务"
+
+msgid "分配任务..."
+msgstr "分配任务..."
+
+msgid "分配给:"
+msgstr "分配给:"
+
+msgid "确定"
+msgstr "确定"
+
+msgid "取消"
+msgstr "取消"
+
+msgid "团队数"
+msgstr "团队数"
+
+msgid "成员数"
+msgstr "成员数"
+
+msgid "关闭"
+msgstr "关闭"
+
+msgid "确定要删除选中的组织吗？"
+msgstr "确定要删除选中的组织吗？"
+
+msgid "确定要删除选中的团队吗？"
+msgstr "确定要删除选中的团队吗？"
+
+msgid "确认"
+msgstr "确认"
+
+msgid "编辑组织"
+msgstr "编辑组织"
+
+msgid "添加组织"
+msgstr "添加组织"
+
+msgid "组织名称"
+msgstr "组织名称"
+
+msgid "组织名称:"
+msgstr "组织名称:"
+
+msgid "组织管理"
+msgstr "组织管理"
+
+msgid "团队管理"
+msgstr "团队管理"
+
+msgid "团队名称"
+msgstr "团队名称"
+
+msgid "团队名称:"
+msgstr "团队名称:"
+
+msgid "添加"
+msgstr "添加"
+
+msgid "编辑"
+msgstr "编辑"
+
+msgid "删除"
+msgstr "删除"
+
+msgid "团队"
+msgstr "团队"
+
+msgid "团队协作功能"
+msgstr "团队协作功能"
+
+msgid "团队任务视图"
+msgstr "团队任务视图"
+
+msgid "管理用户..."
+msgstr "管理用户..."
+
+msgid "管理团队成员和用户账户"
+msgstr "管理团队成员和用户账户"
+
+msgid "管理团队..."
+msgstr "管理团队..."
+
+msgid "管理组织内的团队"
+msgstr "管理组织内的团队"
+
+msgid "管理组织..."
+msgstr "管理组织..."
+
+msgid "管理组织结构"
+msgstr "管理组织结构"
+
+msgid "请先选择要分配的任务"
+msgstr "请先选择要分配的任务"
+
+msgid "请先选择要删除的团队"
+msgstr "请先选择要删除的团队"
+
+msgid "请先选择要删除的组织"
+msgstr "请先选择要删除的组织"
+
+msgid "请先选择要编辑的团队"
+msgstr "请先选择要编辑的团队"
+
+msgid "请先选择要编辑的组织"
+msgstr "请先选择要编辑的组织"
+
+msgid "请输入团队名称"
+msgstr "请输入团队名称"
+
+msgid "已选择 %d 个任务"
+msgstr "已选择 %d 个任务"
+
+msgid "团队"
+msgstr "团队"
+
+msgid "添加团队"
+msgstr "添加团队"
+
+msgid "编辑团队"
+msgstr "编辑团队"
+
+msgid "查看所有团队成员的任务"
+msgstr "查看所有团队成员的任务"
+
+msgid "描述"
+msgstr "描述"
+
+msgid "描述:"
+msgstr "描述:"
+
+msgid "备注:"
+msgstr "备注:"
+
+msgid "提示"
+msgstr "提示"
+
+msgid "将任务分配给团队成员"
+msgstr "将任务分配给团队成员"
+
+msgid "组织"
+msgstr "组织"
