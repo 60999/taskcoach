@@ -257,10 +257,6 @@ class MainMenu(wx.MenuBar):
                 _("&Actions"),
             ),
             (
-                ActionMenu(mainwindow, settings, taskFile, viewerContainer),
-                _("&Actions"),
-            ),
-            (
                 TeamMenu(mainwindow, settings, taskFile, viewerContainer),
                 _("&Team"),
             ),
