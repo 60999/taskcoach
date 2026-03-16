@@ -33,3 +33,27 @@ __pycache__
 venv
 Welcome.tsk.lock
 test screenshots/
+# 临时脚本文件
+add_all_gui_missing.py
+add_missing_multiline.py
+analyze_empty_translations.py
+fix_all_empty_translations.py
+fix_all_translations_complete.py
+fix_all_translations.py
+fix_multiline_translations.py
+fix_translations_final.py
+fix_translations_final2.py
+fix_translations_final3.py
+fix_translations_v4.py
+fix_translations_v5.py
+fix_translations_v6.py
+fix_translations.py
+old_version/
+# 测试和输出文件
+test1.csv
+test2.csv
+test_output.log
+TaskCoach-1.4.6.zip
+output.tsk.delta
+output.tsk
+output.tsk.lock
