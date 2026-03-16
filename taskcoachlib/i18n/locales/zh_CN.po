@@ -8928,3 +8928,22 @@ msgstr "将任务分配给团队成员"
 
 msgid "组织"
 msgstr "组织"
+
+
+# Status icon translations
+msgid "All statuses must be reset to their defaults and this option must be enabled to make the INI settings file compatible with Task Coach < 2.0.1.72. The task data file may reference newer icons that older versions cannot display, but it will not crash, the icons simply won't appear in older versions of Task Coach."
+msgstr "所有状态必须重置为默认值，并且必须启用此选项才能使INI设置文件与Task Coach < 2.0.1.72兼容。任务数据文件可能引用旧版本无法显示的更新图标，但不会崩溃，只是旧版本的Task Coach中不会显示这些图标。"
+
+
+# Missing multiline translations
+msgid "Cannot acquire a lock because locking is not supported\non the location of %s.\nOpen %s unlocked?"
+msgstr "无法获取锁定，因为 %s 的位置不支持锁定。\n是否以未锁定方式打开 %s？"
+
+msgid "Cannot open %(filename)s\nbecause it was created by a newer version of %(name)s.\nPlease upgrade %(name)s."
+msgstr "无法打开 %(filename)s，\n因为它是由更新版本的 %(name)s 创建的。\n请升级 %(name)s。"
+
+msgid "Could not open an IMAP connection to %(server)s:%(port)s\nto retrieve Thunderbird email message:\n%(error)s"
+msgstr "无法打开到 %(server)s:%(port)s 的IMAP连接\n来获取Thunderbird邮件：\n%(error)s"
+
+msgid "WARNING: The selected language's locale is not installed on your system. Some date and time formats may appear in your system's format instead."
+msgstr "警告：所选语言的区域设置未安装在您的系统上。某些日期和时间格式可能会以您系统的格式显示。"
